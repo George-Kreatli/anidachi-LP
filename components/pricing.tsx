@@ -1,9 +1,15 @@
-"use client"
+"use client";
 
-import { Button } from "@/components/ui/button"
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
-import { Badge } from "@/components/ui/badge"
-import { Check, Star, Zap, Shield } from "lucide-react"
+import { Button } from "@/components/ui/button";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
+import { Check, Star, Zap, Shield } from "lucide-react";
 
 export function Pricing() {
   const handleSubscribe = async (priceId: string) => {
@@ -14,14 +20,14 @@ export function Pricing() {
           "Content-Type": "application/json",
         },
         body: JSON.stringify({ priceId }),
-      })
+      });
 
-      const { url } = await response.json()
-      window.location.href = url
+      const { url } = await response.json();
+      window.location.href = url;
     } catch (error) {
-      console.error("Error creating checkout session:", error)
+      console.error("Error creating checkout session:", error);
     }
-  }
+  };
 
   const plans = [
     {
@@ -29,7 +35,7 @@ export function Pricing() {
       price: "$8",
       period: "/month",
       description: "Perfect for existing Crunchyroll subscribers",
-      priceId: "price_crunchyroll_subscriber",
+      priceId: "price_1RlnY7AGc1Bd58Cjo5BJckhN",
       popular: true,
       savings: "Save $4/month",
       features: [
@@ -42,11 +48,11 @@ export function Pricing() {
       ],
     },
     {
-      name: "Full Access",
-      price: "$12",
+      name: "Anime Junkie",
+      price: "$38",
       period: "/month",
       description: "Complete anime streaming and social experience",
-      priceId: "price_full_access",
+      priceId: "price_1RlnYtAGc1Bd58CjCLqrUG43",
       popular: false,
       savings: "Everything included",
       features: [
@@ -58,7 +64,7 @@ export function Pricing() {
         "Early access to new features",
       ],
     },
-  ]
+  ];
 
   return (
     <section className="py-24 bg-gradient-to-br from-gray-50 to-white">
@@ -68,9 +74,12 @@ export function Pricing() {
             <Zap className="w-4 h-4" />
             Special Launch Pricing
           </div>
-          <h2 className="text-3xl md:text-5xl font-bold text-gray-900 mb-6">Choose Your Adventure</h2>
+          <h2 className="text-3xl md:text-5xl font-bold text-gray-900 mb-6">
+            Choose Your Adventure
+          </h2>
           <p className="text-xl text-gray-600 max-w-2xl mx-auto mb-8">
-            Start your 7-day free trial. No credit card required. Cancel anytime.
+            Start your 7-day free trial. No credit card required. Cancel
+            anytime.
           </p>
 
           {/* Trust indicators */}
@@ -115,12 +124,20 @@ export function Pricing() {
                     {plan.savings}
                   </Badge>
                 </div>
-                <CardTitle className="text-2xl font-bold text-gray-900 mb-2">{plan.name}</CardTitle>
+                <CardTitle className="text-2xl font-bold text-gray-900 mb-2">
+                  {plan.name}
+                </CardTitle>
                 <div className="flex items-baseline justify-center mb-4">
-                  <span className="text-5xl font-bold text-gray-900">{plan.price}</span>
-                  <span className="text-gray-600 ml-1 text-lg">{plan.period}</span>
+                  <span className="text-5xl font-bold text-gray-900">
+                    {plan.price}
+                  </span>
+                  <span className="text-gray-600 ml-1 text-lg">
+                    {plan.period}
+                  </span>
                 </div>
-                <CardDescription className="text-gray-600 text-base">{plan.description}</CardDescription>
+                <CardDescription className="text-gray-600 text-base">
+                  {plan.description}
+                </CardDescription>
               </CardHeader>
 
               <CardContent className="space-y-6">
@@ -144,7 +161,9 @@ export function Pricing() {
                   >
                     Start Free Trial
                   </Button>
-                  <p className="text-xs text-gray-500 text-center mt-2">7-day free trial • No credit card required</p>
+                  <p className="text-xs text-gray-500 text-center mt-2">
+                    7-day free trial • No credit card required
+                  </p>
                 </div>
               </CardContent>
             </Card>
@@ -153,12 +172,17 @@ export function Pricing() {
 
         {/* FAQ Preview */}
         <div className="text-center">
-          <p className="text-gray-600 mb-4">Questions? We've got answers.</p>
-          <Button variant="outline" className="border-purple-200 text-purple-600 hover:bg-purple-50 bg-transparent">
+          <p className="text-gray-600 mb-4">
+            Questions? We&apos;ve got answers.
+          </p>
+          <Button
+            variant="outline"
+            className="border-purple-200 text-purple-600 hover:bg-purple-50 bg-transparent"
+          >
             View FAQ
           </Button>
         </div>
       </div>
     </section>
-  )
+  );
 }

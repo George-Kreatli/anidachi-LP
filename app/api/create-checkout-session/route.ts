@@ -1,13 +1,13 @@
-import { type NextRequest, NextResponse } from "next/server"
-import Stripe from "stripe"
+import { type NextRequest, NextResponse } from "next/server";
+import Stripe from "stripe";
 
 const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!, {
-  apiVersion: "2024-06-20",
-})
+  apiVersion: "2025-06-30.basil",
+});
 
 export async function POST(request: NextRequest) {
   try {
-    const { priceId } = await request.json()
+    const { priceId } = await request.json();
 
     const session = await stripe.checkout.sessions.create({
       mode: "subscription",
@@ -25,11 +25,14 @@ export async function POST(request: NextRequest) {
       subscription_data: {
         trial_period_days: 7,
       },
-    })
+    });
 
-    return NextResponse.json({ url: session.url })
+    return NextResponse.json({ url: session.url });
   } catch (error) {
-    console.error("Error creating checkout session:", error)
-    return NextResponse.json({ error: "Error creating checkout session" }, { status: 500 })
+    console.error("Error creating checkout session:", error);
+    return NextResponse.json(
+      { error: "Error creating checkout session" },
+      { status: 500 }
+    );
   }
 }
