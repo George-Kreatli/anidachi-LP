@@ -1,5 +1,11 @@
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
-import { Chrome, Zap, MousePointer, FolderSyncIcon as Sync } from "lucide-react"
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
+import { Chrome, MousePointer, FolderSyncIcon as Sync } from "lucide-react";
 
 export function ChromeExtensionFeatures() {
   const features = [
@@ -16,39 +22,40 @@ export function ChromeExtensionFeatures() {
         "Instantly create watchrooms for any anime episode with a single click. No manual searching or setup required - just click and invite friends.",
     },
     {
-      icon: Zap,
-      title: "Enhanced Crunchyroll Experience",
-      description:
-        "Seamlessly integrate with your existing Crunchyroll workflow. The extension enhances your browsing without disrupting your viewing experience.",
-    },
-    {
       icon: Sync,
       title: "Stay in Sync with Friends",
       description:
         "Automatically synchronize playback with your watchroom members. Pause, play, and seek together for a truly shared viewing experience.",
     },
-  ]
+  ];
 
   return (
     <section className="py-24 bg-gradient-to-br from-blue-50 to-purple-50">
       <div className="container mx-auto px-4">
         <div className="text-center mb-16">
-          <h2 className="text-3xl md:text-4xl font-bold text-gray-900 mb-4">The Chrome Extension</h2>
+          <h2 className="text-3xl md:text-4xl font-bold text-gray-900 mb-4">
+            Anime Detection Extension
+          </h2>
           <p className="text-xl text-gray-600 max-w-3xl mx-auto">
-            Seamlessly detect anime on Crunchyroll and instantly create watchrooms. Enhance your browsing with smart
-            anime recognition.
+            Seamlessly detect anime on Crunchyroll and instantly create
+            watchrooms. Enhance your browsing with smart anime recognition.
           </p>
         </div>
-        <div className="grid md:grid-cols-2 lg:grid-cols-2 gap-8 max-w-6xl mx-auto">
+        <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8 max-w-6xl mx-auto">
           {features.map((feature, index) => (
-            <Card key={index} className="border-0 shadow-lg hover:shadow-xl transition-shadow duration-300 bg-white">
-              <CardHeader>
-                <div className="w-12 h-12 bg-blue-100 rounded-lg flex items-center justify-center mb-4">
+            <Card
+              key={index}
+              className="border-0 shadow-lg hover:shadow-xl transition-shadow duration-300 bg-white p-6"
+            >
+              <CardHeader className="p-0">
+                <div className="w-12 h-12 bg-blue-100 rounded-lg flex items-center justify-center mb-2">
                   <feature.icon className="h-6 w-6 text-blue-600" />
                 </div>
-                <CardTitle className="text-xl font-semibold text-gray-900">{feature.title}</CardTitle>
+                <CardTitle className="text-xl font-semibold text-gray-900 mb-2">
+                  {feature.title}
+                </CardTitle>
               </CardHeader>
-              <CardContent>
+              <CardContent className="p-0 pt-4">
                 <CardDescription className="text-gray-600 text-base leading-relaxed">
                   {feature.description}
                 </CardDescription>
@@ -58,5 +65,5 @@ export function ChromeExtensionFeatures() {
         </div>
       </div>
     </section>
-  )
+  );
 }

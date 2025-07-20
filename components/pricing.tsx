@@ -37,7 +37,6 @@ export function Pricing() {
       description: "Perfect for existing Crunchyroll subscribers",
       priceId: "price_1RlnY7AGc1Bd58Cjo5BJckhN",
       popular: true,
-      savings: "Save $4/month",
       features: [
         "Unlimited watchrooms",
         "Real-time chat and discussions",
@@ -54,7 +53,6 @@ export function Pricing() {
       description: "Complete anime streaming and social experience",
       priceId: "price_1RlnYtAGc1Bd58CjCLqrUG43",
       popular: false,
-      savings: "Everything included",
       features: [
         "Everything in Crunchyroll Subscriber",
         "Built-in anime streaming",
@@ -77,10 +75,6 @@ export function Pricing() {
           <h2 className="text-3xl md:text-5xl font-bold text-gray-900 mb-6">
             Choose Your Adventure
           </h2>
-          <p className="text-xl text-gray-600 max-w-2xl mx-auto mb-8">
-            Start your 7-day free trial. No credit card required. Cancel
-            anytime.
-          </p>
 
           {/* Trust indicators */}
           <div className="flex justify-center items-center gap-6 text-sm text-gray-500 mb-8">
@@ -92,10 +86,6 @@ export function Pricing() {
               <Star className="w-4 h-4" />
               <span>Cancel anytime</span>
             </div>
-            <div className="flex items-center gap-2">
-              <Zap className="w-4 h-4" />
-              <span>Instant access</span>
-            </div>
           </div>
         </div>
 
@@ -103,14 +93,14 @@ export function Pricing() {
           {plans.map((plan, index) => (
             <Card
               key={index}
-              className={`relative border-2 transition-all duration-300 hover:shadow-2xl ${
+              className={`relative border-2 transition-all duration-300 hover:shadow-2xl px-6 py-8 ${
                 plan.popular
                   ? "border-purple-500 shadow-xl scale-105 bg-gradient-to-br from-purple-50 to-white"
                   : "border-gray-200 hover:border-purple-300 bg-white"
               }`}
             >
               {plan.popular && (
-                <div className="absolute -top-4 left-1/2 transform -translate-x-1/2">
+                <div className="absolute -top-5 left-1/2 transform -translate-x-1/2">
                   <Badge className="bg-gradient-to-r from-purple-600 to-blue-600 text-white px-6 py-2 text-sm font-semibold">
                     <Star className="w-3 h-3 mr-1" />
                     Most Popular
@@ -118,16 +108,11 @@ export function Pricing() {
                 </div>
               )}
 
-              <CardHeader className="text-center pb-8 pt-8">
-                <div className="mb-4">
-                  <Badge variant="secondary" className="text-xs font-medium">
-                    {plan.savings}
-                  </Badge>
-                </div>
+              <CardHeader className="text-center pt-6 pb-4">
                 <CardTitle className="text-2xl font-bold text-gray-900 mb-2">
                   {plan.name}
                 </CardTitle>
-                <div className="flex items-baseline justify-center mb-4">
+                <div className="flex items-baseline justify-center mb-2">
                   <span className="text-5xl font-bold text-gray-900">
                     {plan.price}
                   </span>
@@ -140,8 +125,8 @@ export function Pricing() {
                 </CardDescription>
               </CardHeader>
 
-              <CardContent className="space-y-6">
-                <ul className="space-y-4">
+              <CardContent className="space-y-3 px-6 pb-6">
+                <ul className="space-y-2 mb-4">
                   {plan.features.map((feature, featureIndex) => (
                     <li key={featureIndex} className="flex items-start gap-3">
                       <Check className="h-5 w-5 text-green-500 flex-shrink-0 mt-0.5" />
@@ -159,28 +144,15 @@ export function Pricing() {
                     }`}
                     onClick={() => handleSubscribe(plan.priceId)}
                   >
-                    Start Free Trial
+                    Sign Up
                   </Button>
                   <p className="text-xs text-gray-500 text-center mt-2">
-                    7-day free trial • No credit card required
+                    Refundable • Cancel anytime
                   </p>
                 </div>
               </CardContent>
             </Card>
           ))}
-        </div>
-
-        {/* FAQ Preview */}
-        <div className="text-center">
-          <p className="text-gray-600 mb-4">
-            Questions? We&apos;ve got answers.
-          </p>
-          <Button
-            variant="outline"
-            className="border-purple-200 text-purple-600 hover:bg-purple-50 bg-transparent"
-          >
-            View FAQ
-          </Button>
         </div>
       </div>
     </section>

@@ -22,9 +22,7 @@ export async function POST(request: NextRequest) {
       cancel_url: `${request.nextUrl.origin}/`,
       allow_promotion_codes: true,
       billing_address_collection: "required",
-      subscription_data: {
-        trial_period_days: 7,
-      },
+      subscription_data: {},
     });
 
     return NextResponse.json({ url: session.url });

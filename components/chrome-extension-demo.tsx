@@ -217,15 +217,15 @@ export function ChromeExtensionDemo() {
                     : "translate-x-full opacity-0"
                 }`}
               >
-                <Card className="w-80 bg-white/95 backdrop-blur-sm shadow-xl border-0">
-                  <CardHeader className="pb-3">
+                <Card className="w-80 bg-white/95 backdrop-blur-sm shadow-xl border-0 p-6">
+                  <CardHeader className="p-0">
                     <div className="flex items-center justify-between">
                       <div className="flex items-center space-x-2">
-                        <div className="w-8 h-8 bg-purple-100 rounded-lg flex items-center justify-center">
+                        <div className="w-8 h-8 bg-purple-100 rounded-lg flex items-center justify-center mb-2">
                           <Chrome className="w-4 h-4 text-purple-600" />
                         </div>
-                        <CardTitle className="text-sm font-semibold text-gray-900">
-                          AnimeApp Extension
+                        <CardTitle className="text-sm font-semibold text-gray-900 mb-2">
+                          AniDachi Extension
                         </CardTitle>
                       </div>
                       {step >= 1 && animeDetected && (
@@ -236,7 +236,7 @@ export function ChromeExtensionDemo() {
                       )}
                     </div>
                   </CardHeader>
-                  <CardContent className="space-y-4">
+                  <CardContent className="p-0 pt-4">
                     {/* Login Interface - Step 0 */}
                     {step === 0 && (
                       <div className="space-y-3">
@@ -246,7 +246,7 @@ export function ChromeExtensionDemo() {
                           </p>
                           <Button className="w-full bg-purple-600 hover:bg-purple-700">
                             <Users className="w-4 h-4 mr-2" />
-                            Login to AnimeApp
+                            Login to AniDachi
                           </Button>
                         </div>
                       </div>
@@ -443,9 +443,9 @@ export function ChromeExtensionDemo() {
 
           {/* Feature Highlights */}
           <div className="grid md:grid-cols-3 gap-6 mt-12">
-            <Card className="bg-gray-800/50 border-gray-700 text-white">
-              <CardContent className="p-6 text-center">
-                <div className="w-12 h-12 bg-purple-100 rounded-lg flex items-center justify-center mx-auto mb-4">
+            <Card className="bg-gray-800/50 border-gray-700 text-white p-6">
+              <CardContent className="p-0 text-center">
+                <div className="w-12 h-12 bg-purple-100 rounded-lg flex items-center justify-center mx-auto mb-2">
                   <Chrome className="w-6 h-6 text-purple-600" />
                 </div>
                 <h3 className="font-semibold mb-2">Automatic Detection</h3>
@@ -454,9 +454,9 @@ export function ChromeExtensionDemo() {
                 </p>
               </CardContent>
             </Card>
-            <Card className="bg-gray-800/50 border-gray-700 text-white">
-              <CardContent className="p-6 text-center">
-                <div className="w-12 h-12 bg-blue-100 rounded-lg flex items-center justify-center mx-auto mb-4">
+            <Card className="bg-gray-800/50 border-gray-700 text-white p-6">
+              <CardContent className="p-0 text-center">
+                <div className="w-12 h-12 bg-blue-100 rounded-lg flex items-center justify-center mx-auto mb-2">
                   <Users className="w-6 h-6 text-blue-600" />
                 </div>
                 <h3 className="font-semibold mb-2">One-Click Setup</h3>
@@ -465,9 +465,9 @@ export function ChromeExtensionDemo() {
                 </p>
               </CardContent>
             </Card>
-            <Card className="bg-gray-800/50 border-gray-700 text-white">
-              <CardContent className="p-6 text-center">
-                <div className="w-12 h-12 bg-green-100 rounded-lg flex items-center justify-center mx-auto mb-4">
+            <Card className="bg-gray-800/50 border-gray-700 text-white p-6">
+              <CardContent className="p-0 text-center">
+                <div className="w-12 h-12 bg-green-100 rounded-lg flex items-center justify-center mx-auto mb-2">
                   <Share2 className="w-6 h-6 text-green-600" />
                 </div>
                 <h3 className="font-semibold mb-2">Perfect Sync</h3>
