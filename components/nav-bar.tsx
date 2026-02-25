@@ -30,12 +30,12 @@ export function NavBar() {
             </Link>
           </li>
           <li>
-            <Link href="/privacy" className="text-purple-100 hover:text-white transition-colors">
+            <Link href="/blou/privacy" className="text-purple-100 hover:text-white transition-colors">
               Privacy Policy
             </Link>
           </li>
           <li>
-            <Link href="/terms" className="text-purple-100 hover:text-white transition-colors">
+            <Link href="/blou/terms" className="text-purple-100 hover:text-white transition-colors">
               Terms of Service
             </Link>
           </li>

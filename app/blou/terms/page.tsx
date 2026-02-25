@@ -31,7 +31,7 @@ export default function TermsPage() {
               Bloü
             </Link>
             <Link
-              href="/privacy"
+              href="/blou/privacy"
               className="text-sm text-gray-600 hover:text-purple-600 transition-colors"
             >
               Privacy
@@ -207,10 +207,10 @@ export default function TermsPage() {
         </div>
         <p className="mt-12">
           <Link
-            href="/"
+            href="/blou"
             className="text-purple-600 hover:underline font-medium"
           >
-            ← Back to Home
+            ← Back to Bloü
           </Link>
         </p>
       </div>

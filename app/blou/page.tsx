@@ -59,13 +59,13 @@ export default function BlouPage() {
               Home
             </Link>
             <Link
-              href="/privacy"
+              href="/blou/privacy"
               className="text-sm text-stone-500 hover:text-teal-600 transition-colors"
             >
               Privacy
             </Link>
             <Link
-              href="/terms"
+              href="/blou/terms"
               className="text-sm text-stone-500 hover:text-teal-600 transition-colors"
             >
               Terms
@@ -174,9 +174,9 @@ export default function BlouPage() {
         <div className="container mx-auto px-4 text-center text-sm text-stone-500">
           <p>
             Bloü requires an active subscription to access the app.{" "}
-            <Link href="/privacy" className="text-teal-600 hover:underline">Privacy Policy</Link>
+            <Link href="/blou/privacy" className="text-teal-600 hover:underline">Privacy Policy</Link>
             {" · "}
-            <Link href="/terms" className="text-teal-600 hover:underline">Terms of Service</Link>
+            <Link href="/blou/terms" className="text-teal-600 hover:underline">Terms of Service</Link>
           </p>
           <p className="mt-2">
             <Link href="/" className="text-teal-600 hover:underline">← Back to AniDachi</Link>
