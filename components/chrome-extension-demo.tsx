@@ -100,7 +100,7 @@ export function ChromeExtensionDemo() {
     }, 2000); // Changed from 4000ms to 2000ms
 
     return () => clearTimeout(timer);
-  }, [step]);
+  }, [step, steps.length]);
 
   return (
     <section className="py-24 bg-gradient-to-br from-gray-900 to-gray-800 text-white overflow-hidden">
