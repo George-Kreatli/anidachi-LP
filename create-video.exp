@@ -1,0 +1,49 @@
+#!/usr/bin/expect -f
+
+set timeout 300
+
+spawn npx create-video@latest
+
+# Wait for template selection prompt
+expect "Choose a template:"
+
+# Press arrow down 6 times to select "Prompt to Motion Graphics (Next.js)"
+send "\033\[B"
+sleep 0.1
+send "\033\[B"
+sleep 0.1
+send "\033\[B"
+sleep 0.1
+send "\033\[B"
+sleep 0.1
+send "\033\[B"
+sleep 0.1
+send "\033\[B"
+sleep 0.1
+
+# Press Enter to confirm template selection
+send "\r"
+sleep 1
+
+# Wait for directory prompt
+expect "Directory to create your project"
+
+# Type the directory name
+send "prompt-to-motion\r"
+sleep 1
+
+# Wait for Git repo question
+expect {
+    "Do you want to continue?" {
+        # Select Yes (right arrow to move to Yes, then Enter)
+        send "\033\[C"
+        sleep 0.1
+        send "\r"
+    }
+    timeout {
+        # If no Git question appears, just continue
+    }
+}
+
+# Wait for the process to complete
+expect eof
