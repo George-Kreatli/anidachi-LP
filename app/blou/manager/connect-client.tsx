@@ -104,9 +104,6 @@ export function ConnectClient() {
               {error ?? (urlError ? (ERROR_MESSAGES[urlError] ?? urlError.replace(/_/g, " ")) : "Connection failed.")}
             </p>
           )}
-          {error && (
-            <p className="text-sm text-red-600 bg-red-50 p-3 rounded-lg">{error}</p>
-          )}
           {status?.connected ? (
             <div className="space-y-4">
               <p className="text-sm text-stone-600">
