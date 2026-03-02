@@ -1,5 +1,8 @@
 import { NextRequest, NextResponse } from "next/server";
 
+// Ensure env is read at request time (not at build time)
+export const dynamic = "force-dynamic";
+
 const SCOPES = [
   "instagram_business_basic",
   "instagram_business_content_publish",

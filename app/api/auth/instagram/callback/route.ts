@@ -1,6 +1,8 @@
 import { NextRequest, NextResponse } from "next/server";
 import { setCredentials } from "@/lib/instagram/storage";
 
+export const dynamic = "force-dynamic";
+
 const GRAPH_BASE = "https://graph.facebook.com/v21.0";
 
 export async function GET(request: NextRequest) {
