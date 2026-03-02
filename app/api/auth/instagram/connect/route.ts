@@ -3,10 +3,13 @@ import { NextRequest, NextResponse } from "next/server";
 // Ensure env is read at request time (not at build time)
 export const dynamic = "force-dynamic";
 
+// Instagram API with *Facebook* Login (facebook.com/dialog/oauth) uses these scopes.
+// Do NOT use instagram_business_* — those are for "Instagram API with Instagram Login" only.
 const SCOPES = [
-  "instagram_business_basic",
-  "instagram_business_content_publish",
   "pages_show_list",
+  "pages_read_engagement",
+  "instagram_basic",
+  "instagram_content_publish",
 ].join(",");
 
 export async function GET(request: NextRequest) {
