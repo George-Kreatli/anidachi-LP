@@ -13,8 +13,19 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "AniDachi",
-  description: "AniDachi is a platform for watching anime together.",
+  title: "AniDachi – Watch Anime Together",
+  description:
+    "AniDachi is a platform for watching anime together. Subscribe for watchrooms, real-time chat, Chrome extension, and more.",
+  metadataBase: new URL(
+    process.env.NEXT_PUBLIC_SITE_URL || "https://anidachi.com"
+  ),
+  openGraph: {
+    title: "AniDachi – Watch Anime Together",
+    description:
+      "AniDachi is a platform for watching anime together. Subscribe for watchrooms, real-time chat, Chrome extension, and more.",
+    type: "website",
+  },
+  robots: { index: true, follow: true },
 };
 
 export default function RootLayout({

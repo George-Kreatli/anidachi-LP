@@ -70,6 +70,12 @@ export default function BlouPage() {
             >
               Terms
             </Link>
+            <Link
+              href="/blou/manager"
+              className="text-sm text-stone-500 hover:text-teal-600 transition-colors"
+            >
+              Content Manager
+            </Link>
           </nav>
         </div>
       </header>
