@@ -3,7 +3,26 @@ import { setCredentials } from "@/lib/instagram/storage";
 
 export const dynamic = "force-dynamic";
 
-const GRAPH_BASE = "https://graph.facebook.com/v21.0";
+const INSTAGRAM_TOKEN_URL = "https://api.instagram.com/oauth/access_token";
+const INSTAGRAM_GRAPH_BASE = "https://graph.instagram.com";
+
+type ShortLivedTokenResponse =
+  | {
+      access_token?: string;
+      user_id?: string | number;
+      permissions?: string | string[];
+      error_type?: string;
+      error_message?: string;
+    }
+  | {
+      data?: {
+        access_token?: string;
+        user_id?: string | number;
+        permissions?: string | string[];
+      }[];
+      error_type?: string;
+      error_message?: string;
+    };
 
 export async function GET(request: NextRequest) {
   const { searchParams } = request.nextUrl;
@@ -11,8 +30,10 @@ export async function GET(request: NextRequest) {
   const state = searchParams.get("state");
   const error = searchParams.get("error");
 
-  const appId = process.env.META_APP_ID;
-  const appSecret = process.env.META_APP_SECRET;
+  const appId =
+    process.env.INSTAGRAM_APP_ID || process.env.META_APP_ID || "";
+  const appSecret =
+    process.env.INSTAGRAM_APP_SECRET || process.env.META_APP_SECRET || "";
   const redirectUri =
     process.env.INSTAGRAM_OAUTH_REDIRECT_URI ||
     `${request.nextUrl.origin}/api/auth/instagram/callback`;
@@ -36,100 +57,105 @@ export async function GET(request: NextRequest) {
   }
 
   try {
-    // Exchange code for short-lived user access token
-    const tokenUrl = new URL(`${GRAPH_BASE}/oauth/access_token`);
-    tokenUrl.searchParams.set("client_id", appId);
-    tokenUrl.searchParams.set("client_secret", appSecret);
-    tokenUrl.searchParams.set("redirect_uri", redirectUri);
-    tokenUrl.searchParams.set("code", code);
+    // Step 1: exchange authorization code for a short-lived Instagram User access token.
+    const tokenRes = await fetch(INSTAGRAM_TOKEN_URL, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/x-www-form-urlencoded",
+      },
+      body: new URLSearchParams({
+        client_id: appId,
+        client_secret: appSecret,
+        grant_type: "authorization_code",
+        redirect_uri: redirectUri,
+        code,
+      }).toString(),
+    });
 
-    const tokenRes = await fetch(tokenUrl.toString());
-    const tokenData = (await tokenRes.json()) as {
-      access_token?: string;
-      error?: { message: string };
-    };
+    const tokenJson = (await tokenRes.json()) as ShortLivedTokenResponse;
 
-    if (!tokenData.access_token) {
-      const msg = tokenData.error?.message || "Token exchange failed";
+    const tokenPayload =
+      "data" in tokenJson && Array.isArray(tokenJson.data)
+        ? tokenJson.data[0] || {}
+        : tokenJson;
+
+    const shortLivedToken = tokenPayload.access_token;
+    const igUserIdFromToken = tokenPayload.user_id;
+
+    if (!shortLivedToken) {
+      const msg =
+        tokenJson?.error_message ||
+        tokenJson?.error_type ||
+        "Token exchange failed";
       return NextResponse.redirect(
         new URL(`/blou/manager?error=${encodeURIComponent(msg)}`, request.url)
       );
     }
 
-    const shortLivedToken = tokenData.access_token;
-
-    // Exchange for long-lived token (60 days)
-    const longLivedUrl = new URL(`${GRAPH_BASE}/oauth/access_token`);
-    longLivedUrl.searchParams.set("grant_type", "fb_exchange_token");
-    longLivedUrl.searchParams.set("client_id", appId);
+    // Step 2: exchange short-lived token for a long-lived token (valid for ~60 days).
+    const longLivedUrl = new URL(
+      `${INSTAGRAM_GRAPH_BASE}/access_token`
+    );
+    longLivedUrl.searchParams.set("grant_type", "ig_exchange_token");
     longLivedUrl.searchParams.set("client_secret", appSecret);
-    longLivedUrl.searchParams.set("fb_exchange_token", shortLivedToken);
+    longLivedUrl.searchParams.set("access_token", shortLivedToken);
 
     const longLivedRes = await fetch(longLivedUrl.toString());
     const longLivedData = (await longLivedRes.json()) as {
       access_token?: string;
+      token_type?: string;
       expires_in?: number;
       error?: { message: string };
     };
 
     if (!longLivedData.access_token) {
-      const msg = longLivedData.error?.message || "Long-lived token exchange failed";
+      const msg =
+        longLivedData.error?.message || "Long-lived token exchange failed";
       return NextResponse.redirect(
         new URL(`/blou/manager?error=${encodeURIComponent(msg)}`, request.url)
       );
     }
 
     const userToken = longLivedData.access_token;
-    const expiresIn = longLivedData.expires_in ?? 60 * 24 * 60 * 60; // 60 days in seconds
+    const expiresIn =
+      longLivedData.expires_in ?? 60 * 24 * 60 * 60; // 60 days in seconds
     const tokenExpiry = Date.now() + expiresIn * 1000;
 
-    // Get user's Facebook Pages
-    const accountsRes = await fetch(
-      `${GRAPH_BASE}/me/accounts?access_token=${encodeURIComponent(userToken)}`
-    );
-    const accountsData = (await accountsRes.json()) as {
-      data?: { id: string; access_token: string }[];
-      error?: { message: string };
-    };
+    // Step 3: fetch Instagram user id + username from the /me endpoint.
+    const meUrl = new URL(`${INSTAGRAM_GRAPH_BASE}/v25.0/me`);
+    meUrl.searchParams.set("fields", "user_id,username");
+    meUrl.searchParams.set("access_token", userToken);
 
-    if (!accountsData.data?.length) {
-      return NextResponse.redirect(
-        new URL(
-          "/blou/manager?error=no_pages",
-          request.url
-        )
-      );
-    }
+    const meRes = await fetch(meUrl.toString());
+    const meData = (await meRes.json()) as
+      | {
+          user_id?: string;
+          username?: string;
+        }
+      | {
+          data?: {
+            user_id?: string;
+            username?: string;
+          }[];
+        };
 
-    // Use first page to get Instagram Business Account
-    const pageId = accountsData.data[0].id;
-    const pageRes = await fetch(
-      `${GRAPH_BASE}/${pageId}?fields=instagram_business_account&access_token=${encodeURIComponent(userToken)}`
-    );
-    const pageData = (await pageRes.json()) as {
-      instagram_business_account?: { id: string };
-      error?: { message: string };
-    };
+    const mePayload =
+      "data" in meData && Array.isArray(meData.data)
+        ? meData.data[0] || {}
+        : meData;
 
-    const igUserId = pageData.instagram_business_account?.id;
+    const igUserId =
+      (mePayload.user_id as string | undefined) ??
+      (typeof igUserIdFromToken === "string"
+        ? igUserIdFromToken
+        : igUserIdFromToken?.toString());
+    const igUsername = mePayload.username ?? "unknown";
+
     if (!igUserId) {
       return NextResponse.redirect(
-        new URL(
-          "/blou/manager?error=no_instagram_account",
-          request.url
-        )
+        new URL("/blou/manager?error=no_instagram_account", request.url)
       );
     }
-
-    // Get Instagram username
-    const igUserRes = await fetch(
-      `${GRAPH_BASE}/${igUserId}?fields=username&access_token=${encodeURIComponent(userToken)}`
-    );
-    const igUserData = (await igUserRes.json()) as {
-      username?: string;
-      error?: { message: string };
-    };
-    const igUsername = igUserData.username ?? "unknown";
 
     await setCredentials({
       accessToken: userToken,
@@ -138,14 +164,13 @@ export async function GET(request: NextRequest) {
       igUsername,
     });
 
-    return NextResponse.redirect(new URL("/blou/manager?connected=1", request.url));
+    return NextResponse.redirect(
+      new URL("/blou/manager?connected=1", request.url)
+    );
   } catch (err) {
     console.error("Instagram callback error:", err);
     return NextResponse.redirect(
-      new URL(
-        "/blou/manager?error=server_error",
-        request.url
-      )
+      new URL("/blou/manager?error=server_error", request.url)
     );
   }
 }
