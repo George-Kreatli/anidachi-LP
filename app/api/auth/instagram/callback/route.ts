@@ -74,10 +74,16 @@ export async function GET(request: NextRequest) {
 
     const tokenJson = (await tokenRes.json()) as ShortLivedTokenResponse;
 
-    const tokenPayload =
+    const tokenPayload = (
       "data" in tokenJson && Array.isArray(tokenJson.data)
         ? tokenJson.data[0] || {}
-        : tokenJson;
+        : tokenJson
+    ) as {
+      access_token?: string;
+      user_id?: string | number;
+      error_type?: string;
+      error_message?: string;
+    };
 
     const shortLivedToken = tokenPayload.access_token;
     const igUserIdFromToken = tokenPayload.user_id;
