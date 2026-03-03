@@ -145,10 +145,14 @@ export async function GET(request: NextRequest) {
           }[];
         };
 
-    const mePayload =
+    const mePayload = (
       "data" in meData && Array.isArray(meData.data)
         ? meData.data[0] || {}
-        : meData;
+        : meData
+    ) as {
+      user_id?: string;
+      username?: string;
+    };
 
     const igUserId =
       (mePayload.user_id as string | undefined) ??
