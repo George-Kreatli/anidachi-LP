@@ -36,13 +36,18 @@ export async function POST(request: NextRequest) {
           { status: 400 }
         );
       }
-      return uploadFiles(fileList);
+      return await uploadFiles(fileList);
     }
-    return uploadFiles(files);
+    return await uploadFiles(files);
   } catch (err) {
     console.error("Upload error:", err);
     return NextResponse.json(
-      { error: "Upload failed" },
+      {
+        error:
+          err instanceof Error
+            ? `Upload failed: ${err.message}`
+            : "Upload failed",
+      },
       { status: 500 }
     );
   }
@@ -74,12 +79,17 @@ async function uploadFiles(files: File[]) {
     const ext = getExtension(mime, file.name);
     const pathname = `blou/${date}/${crypto.randomUUID()}.${ext}`;
 
-    const blob = await put(pathname, file, {
-      access: "public",
-      addRandomSuffix: false,
-      contentType: mime,
-    });
-    results.push({ url: blob.url });
+    try {
+      const blob = await put(pathname, file, {
+        access: "public",
+        addRandomSuffix: false,
+        contentType: mime,
+      });
+      results.push({ url: blob.url });
+    } catch (err) {
+      console.error("Blob put() error:", err);
+      throw err;
+    }
   }
 
   if (results.length === 1) {
