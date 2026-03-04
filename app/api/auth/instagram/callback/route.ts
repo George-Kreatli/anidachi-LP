@@ -34,13 +34,21 @@ function clearStateCookie(response: NextResponse, isSecure: boolean) {
   });
 }
 
+function getOrigin(request: NextRequest): string {
+  const forwardedHost = request.headers.get("x-forwarded-host");
+  const forwardedProto = request.headers.get("x-forwarded-proto") || "https";
+  if (forwardedHost) return `${forwardedProto}://${forwardedHost}`;
+  return request.nextUrl.origin;
+}
+
 export async function GET(request: NextRequest) {
   const { searchParams } = request.nextUrl;
   const code = searchParams.get("code");
   const state = searchParams.get("state");
   const error = searchParams.get("error");
   const stateCookie = request.cookies.get("instagram_oauth_state")?.value;
-  const isSecure = request.nextUrl.protocol === "https:";
+  const origin = getOrigin(request);
+  const isSecure = origin.startsWith("https://");
 
   const appId =
     process.env.INSTAGRAM_APP_ID || process.env.META_APP_ID || "";
@@ -52,13 +60,13 @@ export async function GET(request: NextRequest) {
 
   if (!appId || !appSecret) {
     return NextResponse.redirect(
-      new URL("/blou/manager?error=config", request.url)
+      new URL("/blou/manager?error=config", origin)
     );
   }
 
   if (error) {
     const redirect = NextResponse.redirect(
-      new URL(`/blou/manager?error=${encodeURIComponent(error)}`, request.url)
+      new URL(`/blou/manager?error=${encodeURIComponent(error)}`, origin)
     );
     clearStateCookie(redirect, isSecure);
     return redirect;
@@ -66,7 +74,7 @@ export async function GET(request: NextRequest) {
 
   if (!code || !state || !stateCookie || state !== stateCookie) {
     const redirect = NextResponse.redirect(
-      new URL("/blou/manager?error=missing_or_invalid_state", request.url)
+      new URL("/blou/manager?error=missing_or_invalid_state", origin)
     );
     clearStateCookie(redirect, isSecure);
     return redirect;
@@ -110,7 +118,7 @@ export async function GET(request: NextRequest) {
         tokenJson?.error_type ||
         "Token exchange failed";
       const redirect = NextResponse.redirect(
-        new URL(`/blou/manager?error=${encodeURIComponent(msg)}`, request.url)
+        new URL(`/blou/manager?error=${encodeURIComponent(msg)}`, origin)
       );
       clearStateCookie(redirect, isSecure);
       return redirect;
@@ -136,7 +144,7 @@ export async function GET(request: NextRequest) {
       const msg =
         longLivedData.error?.message || "Long-lived token exchange failed";
       const redirect = NextResponse.redirect(
-        new URL(`/blou/manager?error=${encodeURIComponent(msg)}`, request.url)
+        new URL(`/blou/manager?error=${encodeURIComponent(msg)}`, origin)
       );
       clearStateCookie(redirect, isSecure);
       return redirect;
@@ -183,7 +191,7 @@ export async function GET(request: NextRequest) {
 
     if (!igUserId) {
       const redirect = NextResponse.redirect(
-        new URL("/blou/manager?error=no_instagram_account", request.url)
+        new URL("/blou/manager?error=no_instagram_account", origin)
       );
       clearStateCookie(redirect, isSecure);
       return redirect;
@@ -197,7 +205,7 @@ export async function GET(request: NextRequest) {
     });
 
     const redirect = NextResponse.redirect(
-      new URL("/blou/manager?connected=1", request.url)
+      new URL("/blou/manager?connected=1", origin)
     );
     clearStateCookie(redirect, isSecure);
     return redirect;
@@ -205,7 +213,7 @@ export async function GET(request: NextRequest) {
     console.error("Instagram callback error:", err);
     const msg = err instanceof Error ? err.message : "server_error";
     const redirect = NextResponse.redirect(
-      new URL(`/blou/manager?error=${encodeURIComponent(msg)}`, request.url)
+      new URL(`/blou/manager?error=${encodeURIComponent(msg)}`, origin)
     );
     clearStateCookie(redirect, isSecure);
     return redirect;

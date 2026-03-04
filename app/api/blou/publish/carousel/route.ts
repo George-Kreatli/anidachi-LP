@@ -1,19 +1,45 @@
 import { NextRequest, NextResponse } from "next/server";
 import {
-  ensureCredentials,
+  ensureAllCredentials,
   createCarouselChildImage,
   createCarouselChildVideo,
   createCarouselParent,
   pollContainerUntilFinished,
   publishContainer,
 } from "@/lib/instagram/graph";
+import type { InstagramCredentials } from "@/lib/instagram/graph";
 
 const MIN_ITEMS = 2;
 const MAX_ITEMS = 10;
 
+async function publishToAccount(
+  creds: InstagramCredentials,
+  mediaUrls: { url: string; type: "image" | "video" }[],
+  caption: string,
+) {
+  const childIds: string[] = [];
+  for (const item of mediaUrls) {
+    const id =
+      item.type === "image"
+        ? await createCarouselChildImage(creds, item.url)
+        : await createCarouselChildVideo(creds, item.url);
+    childIds.push(id);
+  }
+
+  for (const id of childIds) {
+    await pollContainerUntilFinished(creds, id);
+  }
+
+  const parentId = await createCarouselParent(creds, childIds, caption);
+  await pollContainerUntilFinished(creds, parentId);
+  const result = await publishContainer(creds, parentId);
+  return result.id;
+}
+
 export async function POST(request: NextRequest) {
+  let allCreds: InstagramCredentials[];
   try {
-    await ensureCredentials();
+    allCreds = await ensureAllCredentials();
   } catch {
     return NextResponse.json(
       { error: "Reconnect Instagram", code: "RECONNECT" },
@@ -48,36 +74,51 @@ export async function POST(request: NextRequest) {
     }
   }
 
-  try {
-    const childIds: string[] = [];
-    for (const item of mediaUrls) {
-      const id =
-        item.type === "image"
-          ? await createCarouselChildImage(item.url)
-          : await createCarouselChildVideo(item.url);
-      childIds.push(id);
-    }
+  const results = await Promise.allSettled(
+    allCreds.map((creds) => publishToAccount(creds, mediaUrls, caption ?? ""))
+  );
 
-    for (const id of childIds) {
-      await pollContainerUntilFinished(id);
+  const accountResults = allCreds.map((creds, i) => {
+    const result = results[i];
+    if (result.status === "fulfilled") {
+      return {
+        igUserId: creds.igUserId,
+        username: creds.igUsername,
+        success: true,
+        mediaId: result.value,
+      };
     }
+    const e = result.reason as Error & { status?: number };
+    return {
+      igUserId: creds.igUserId,
+      username: creds.igUsername,
+      success: false,
+      error: e.message || "Failed to publish carousel",
+      needsReconnect: e.status === 401,
+    };
+  });
 
-    const parentId = await createCarouselParent(childIds, caption ?? "");
-    await pollContainerUntilFinished(parentId);
-    const result = await publishContainer(parentId);
-    return NextResponse.json({ success: true, mediaId: result.id });
-  } catch (err) {
-    const e = err as Error & { status?: number };
-    if (e.status === 401) {
-      return NextResponse.json(
-        { error: "Reconnect Instagram", code: "RECONNECT" },
-        { status: 401 }
-      );
-    }
-    console.error("Carousel publish error:", e);
+  const allFailed = accountResults.every((r) => !r.success);
+  const anyNeedsReconnect = accountResults.some((r) => r.needsReconnect);
+
+  if (allFailed && anyNeedsReconnect) {
     return NextResponse.json(
-      { error: e.message || "Failed to publish carousel" },
+      { error: "Reconnect Instagram", code: "RECONNECT", results: accountResults },
+      { status: 401 }
+    );
+  }
+
+  if (allFailed) {
+    return NextResponse.json(
+      { error: "Failed to publish carousel to all accounts", results: accountResults },
       { status: 500 }
     );
   }
+
+  return NextResponse.json({
+    success: true,
+    results: accountResults,
+    // Backwards-compat: return the first successful mediaId at the top level
+    mediaId: accountResults.find((r) => r.success)?.mediaId,
+  });
 }

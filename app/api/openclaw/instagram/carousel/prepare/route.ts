@@ -6,9 +6,10 @@ import {
 } from "@/lib/openclaw-auth";
 import { createJob, updateJob } from "@/lib/openclaw-jobs";
 import {
-  ensureCredentials,
+  ensureAllCredentials,
   createCarouselChildImage,
 } from "@/lib/instagram/graph";
+import type { InstagramCredentials } from "@/lib/instagram/graph";
 
 const MIN_PHOTOS = 2;
 const MAX_PHOTOS = 10;
@@ -19,8 +20,9 @@ export async function POST(request: NextRequest) {
     return unauthorizedResponse();
   }
 
+  let allCreds: InstagramCredentials[];
   try {
-    await ensureCredentials();
+    allCreds = await ensureAllCredentials();
   } catch {
     return NextResponse.json(
       {
@@ -76,9 +78,13 @@ export async function POST(request: NextRequest) {
   }
 
   try {
-    const job = createJob(caption.trim(), photos.length);
+    const job = createJob(
+      caption.trim(),
+      photos.length,
+      allCreds.map((c) => ({ igUserId: c.igUserId, username: c.igUsername })),
+    );
 
-    // Upload to Vercel Blob
+    // Upload to Vercel Blob once (shared across accounts)
     const date = new Date().toISOString().slice(0, 10);
     const blobUrls: string[] = [];
 
@@ -94,30 +100,40 @@ export async function POST(request: NextRequest) {
     }
 
     updateJob(job.id, {
-      status: "creating_children",
+      overallStatus: "creating_children",
       blobUrls,
-      step: "Creating containers",
     });
 
-    // Create child containers (fast API calls, no waiting for processing)
-    const childContainerIds: string[] = [];
-    for (const url of blobUrls) {
-      const containerId = await createCarouselChildImage(url);
-      childContainerIds.push(containerId);
-    }
+    // Create child containers for each account in parallel
+    await Promise.all(
+      allCreds.map(async (creds) => {
+        const acct = job.accounts.find((a) => a.igUserId === creds.igUserId)!;
+        const childIds: string[] = [];
+        for (const url of blobUrls) {
+          const containerId = await createCarouselChildImage(creds, url);
+          childIds.push(containerId);
+        }
+        acct.childContainerIds = childIds;
+        acct.status = "polling_children";
+        acct.step = `0/${photos.length} children ready`;
+      }),
+    );
 
-    updateJob(job.id, {
-      status: "polling_children",
-      childContainerIds,
-      step: `0/${photos.length} children ready`,
-    });
+    updateJob(job.id, { overallStatus: "processing" });
+
+    const accountSummary = job.accounts.map((a) => ({
+      igUserId: a.igUserId,
+      username: a.username,
+      status: a.status,
+      step: a.step,
+    }));
 
     return NextResponse.json(
       {
         success: true,
         jobId: job.id,
-        status: "polling_children",
-        step: `0/${photos.length} children ready`,
+        status: "processing",
+        accounts: accountSummary,
       },
       { status: 202 }
     );

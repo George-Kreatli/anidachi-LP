@@ -1,16 +1,22 @@
 import { NextResponse } from "next/server";
-import { getCredentials } from "@/lib/instagram/storage";
+import { getAllCredentials } from "@/lib/instagram/storage";
 
 export async function GET() {
-  const creds = await getCredentials();
-  if (!creds) {
-    return NextResponse.json({
-      connected: false,
-    });
+  const accounts = await getAllCredentials();
+
+  if (accounts.length === 0) {
+    return NextResponse.json({ connected: false, accounts: [] });
   }
+
   return NextResponse.json({
     connected: true,
-    username: creds.igUsername,
-    igUserId: creds.igUserId,
+    // Keep top-level username for backwards-compat with any existing callers
+    username: accounts[0].igUsername,
+    igUserId: accounts[0].igUserId,
+    accounts: accounts.map((a) => ({
+      igUserId: a.igUserId,
+      username: a.igUsername,
+      connected: true,
+    })),
   });
 }

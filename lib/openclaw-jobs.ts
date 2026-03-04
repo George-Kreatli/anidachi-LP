@@ -1,23 +1,33 @@
-export interface CarouselJob {
-  id: string;
+export interface AccountProgress {
+  igUserId: string;
+  username: string;
+  childContainerIds: string[];
+  childrenReady: number;
+  parentContainerId?: string;
+  mediaId?: string;
   status:
-    | "preparing"
-    | "uploading"
-    | "creating_children"
     | "polling_children"
     | "creating_parent"
     | "publishing"
     | "complete"
     | "failed";
-  caption: string;
-  blobUrls: string[];
-  childContainerIds: string[];
-  parentContainerId?: string;
-  mediaId?: string;
   error?: string;
   step: string;
-  childrenReady: number;
+}
+
+export interface CarouselJob {
+  id: string;
+  overallStatus:
+    | "preparing"
+    | "uploading"
+    | "creating_children"
+    | "processing"
+    | "complete"
+    | "failed";
+  caption: string;
+  blobUrls: string[];
   totalChildren: number;
+  accounts: AccountProgress[];
   createdAt: number;
   updatedAt: number;
 }
@@ -33,18 +43,27 @@ function cleanup() {
   }
 }
 
-export function createJob(caption: string, totalChildren: number): CarouselJob {
+export function createJob(
+  caption: string,
+  totalChildren: number,
+  accounts: { igUserId: string; username: string }[],
+): CarouselJob {
   cleanup();
   const id = crypto.randomUUID();
   const job: CarouselJob = {
     id,
-    status: "preparing",
+    overallStatus: "preparing",
     caption,
     blobUrls: [],
-    childContainerIds: [],
-    childrenReady: 0,
     totalChildren,
-    step: "Uploading images",
+    accounts: accounts.map((a) => ({
+      igUserId: a.igUserId,
+      username: a.username,
+      childContainerIds: [],
+      childrenReady: 0,
+      status: "polling_children",
+      step: "Waiting",
+    })),
     createdAt: Date.now(),
     updatedAt: Date.now(),
   };
@@ -61,4 +80,28 @@ export function updateJob(id: string, updates: Partial<CarouselJob>) {
   if (job) {
     Object.assign(job, updates, { updatedAt: Date.now() });
   }
+}
+
+export function updateAccountProgress(
+  jobId: string,
+  igUserId: string,
+  updates: Partial<AccountProgress>,
+) {
+  const job = jobs.get(jobId);
+  if (!job) return;
+  const account = job.accounts.find((a) => a.igUserId === igUserId);
+  if (account) {
+    Object.assign(account, updates);
+    job.updatedAt = Date.now();
+  }
+}
+
+/** Derive overall job status from per-account statuses. */
+export function deriveOverallStatus(job: CarouselJob): CarouselJob["overallStatus"] {
+  const statuses = job.accounts.map((a) => a.status);
+  if (statuses.every((s) => s === "complete")) return "complete";
+  if (statuses.every((s) => s === "failed")) return "failed";
+  // If some are complete/failed and others still working, still "processing"
+  if (statuses.every((s) => s === "complete" || s === "failed")) return "complete";
+  return "processing";
 }

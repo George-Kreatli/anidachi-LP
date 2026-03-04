@@ -3,12 +3,20 @@ import {
   validateOpenClawSecret,
   unauthorizedResponse,
 } from "@/lib/openclaw-auth";
-import { getJob, updateJob } from "@/lib/openclaw-jobs";
+import {
+  getJob,
+  updateJob,
+  updateAccountProgress,
+  deriveOverallStatus,
+} from "@/lib/openclaw-jobs";
+import type { AccountProgress } from "@/lib/openclaw-jobs";
 import {
   getContainerStatus,
   createCarouselParent,
   publishContainer,
 } from "@/lib/instagram/graph";
+import { getCredentialsById } from "@/lib/instagram/storage";
+import type { InstagramCredentials } from "@/lib/instagram/graph";
 
 const JOB_TIMEOUT_MS = 10 * 60 * 1000; // 10 minutes
 
@@ -33,109 +41,118 @@ export async function GET(request: NextRequest) {
     );
   }
 
-  if (job.status === "complete" || job.status === "failed") {
-    return NextResponse.json({
-      success: true,
-      jobId: job.id,
-      status: job.status,
-      step: job.step,
-      mediaId: job.mediaId,
-      error: job.error,
-    });
+  const formatResponse = () => ({
+    success: true,
+    jobId: job.id,
+    status: job.overallStatus,
+    accounts: job.accounts.map((a) => ({
+      igUserId: a.igUserId,
+      username: a.username,
+      status: a.status,
+      step: a.step,
+      mediaId: a.mediaId,
+      error: a.error,
+    })),
+  });
+
+  if (job.overallStatus === "complete" || job.overallStatus === "failed") {
+    return NextResponse.json(formatResponse());
   }
 
-  // Overall timeout — if the job has been running for too long, mark it failed
   if (Date.now() - job.createdAt > JOB_TIMEOUT_MS) {
-    updateJob(job.id, {
-      status: "failed",
-      error: "Job timed out after 10 minutes",
-      step: "Timed out",
-    });
-    return NextResponse.json({
-      success: true,
-      jobId: job.id,
-      status: "failed",
-      step: "Timed out",
-      error: "Job timed out after 10 minutes",
-    });
+    for (const acct of job.accounts) {
+      if (acct.status !== "complete" && acct.status !== "failed") {
+        updateAccountProgress(job.id, acct.igUserId, {
+          status: "failed",
+          error: "Job timed out after 10 minutes",
+          step: "Timed out",
+        });
+      }
+    }
+    updateJob(job.id, { overallStatus: "failed" });
+    return NextResponse.json(formatResponse());
   }
 
-  try {
-    if (job.status === "polling_children") {
-      await processChildren(job.id);
-    } else if (job.status === "creating_parent") {
-      await processParent(job.id);
-    }
+  // Process each account that still needs work
+  const activeAccounts = job.accounts.filter(
+    (a) => a.status !== "complete" && a.status !== "failed",
+  );
 
-    const updated = getJob(job.id)!;
-    return NextResponse.json({
-      success: true,
-      jobId: updated.id,
-      status: updated.status,
-      step: updated.step,
-      mediaId: updated.mediaId,
-    });
-  } catch (err) {
-    const e = err as Error & { status?: number };
-    if (e.status === 401) {
-      return NextResponse.json(
-        {
-          success: false,
-          error: "Instagram token expired — reconnect in Blou manager",
-          code: "RECONNECT",
-        },
-        { status: 401 }
-      );
-    }
-    console.error("OpenClaw carousel status error:", e);
-    updateJob(job.id, {
-      status: "failed",
-      error: e.message || "Processing failed",
-      step: "Failed",
-    });
-    return NextResponse.json({
-      success: true,
-      jobId: job.id,
-      status: "failed",
-      step: "Failed",
-      error: "Processing failed",
-    });
-  }
+  await Promise.all(
+    activeAccounts.map(async (acct) => {
+      const creds = await getCredentialsById(acct.igUserId);
+      if (!creds) {
+        updateAccountProgress(job.id, acct.igUserId, {
+          status: "failed",
+          error: "Account disconnected",
+          step: "Account disconnected",
+        });
+        return;
+      }
+
+      try {
+        if (acct.status === "polling_children") {
+          await processChildren(job.id, acct, creds);
+        } else if (acct.status === "creating_parent") {
+          await processParent(job.id, acct, creds);
+        }
+      } catch (err) {
+        const e = err as Error & { status?: number };
+        console.error(`OpenClaw status error for @${acct.username}:`, e);
+        updateAccountProgress(job.id, acct.igUserId, {
+          status: "failed",
+          error: e.status === 401 ? "Token expired" : (e.message || "Processing failed"),
+          step: "Failed",
+        });
+      }
+    }),
+  );
+
+  const overall = deriveOverallStatus(job);
+  updateJob(job.id, { overallStatus: overall });
+
+  return NextResponse.json(formatResponse());
 }
 
-async function processChildren(jobId: string) {
-  const job = getJob(jobId)!;
+async function processChildren(
+  jobId: string,
+  acct: AccountProgress,
+  creds: InstagramCredentials,
+) {
+  for (let i = 0; i < acct.childContainerIds.length; i++) {
+    if (i < acct.childrenReady) continue;
 
-  // Find the next child that hasn't been confirmed ready
-  for (let i = 0; i < job.childContainerIds.length; i++) {
-    if (i < job.childrenReady) continue;
-
-    const containerId = job.childContainerIds[i];
-    const { status_code, error_message } = await getContainerStatus(containerId);
+    const containerId = acct.childContainerIds[i];
+    const { status_code, error_message } = await getContainerStatus(creds, containerId);
 
     if (status_code === "FINISHED" || status_code === "PUBLISHED") {
-      const newReady = job.childrenReady + 1;
-      updateJob(jobId, {
+      const newReady = acct.childrenReady + 1;
+      updateAccountProgress(jobId, acct.igUserId, {
         childrenReady: newReady,
-        step: `${newReady}/${job.totalChildren} children ready`,
+        step: `${newReady}/${acct.childContainerIds.length} children ready`,
       });
+      // Refresh the local reference
+      acct.childrenReady = newReady;
 
-      if (newReady === job.totalChildren) {
+      if (newReady === acct.childContainerIds.length) {
         const parentId = await createCarouselParent(
-          job.childContainerIds,
-          job.caption
+          creds,
+          acct.childContainerIds,
+          getJob(jobId)!.caption,
         );
-        updateJob(jobId, {
+        updateAccountProgress(jobId, acct.igUserId, {
           status: "creating_parent",
           parentContainerId: parentId,
           step: "Parent container created, waiting for processing",
         });
+        acct.status = "creating_parent";
+        acct.parentContainerId = parentId;
       }
       return;
     }
 
     if (status_code === "ERROR") {
-      updateJob(jobId, {
+      updateAccountProgress(jobId, acct.igUserId, {
         status: "failed",
         error: error_message || `Child container ${i + 1} failed`,
         step: `Child ${i + 1} failed`,
@@ -143,27 +160,34 @@ async function processChildren(jobId: string) {
       return;
     }
 
-    // Still IN_PROGRESS — update step and return, next poll will check again
-    updateJob(jobId, {
-      step: `${job.childrenReady}/${job.totalChildren} children ready (waiting on ${i + 1})`,
+    // Still IN_PROGRESS
+    updateAccountProgress(jobId, acct.igUserId, {
+      step: `${acct.childrenReady}/${acct.childContainerIds.length} children ready (waiting on ${i + 1})`,
     });
     return;
   }
 }
 
-async function processParent(jobId: string) {
-  const job = getJob(jobId)!;
-  if (!job.parentContainerId) return;
+async function processParent(
+  jobId: string,
+  acct: AccountProgress,
+  creds: InstagramCredentials,
+) {
+  if (!acct.parentContainerId) return;
 
   const { status_code, error_message } = await getContainerStatus(
-    job.parentContainerId
+    creds,
+    acct.parentContainerId,
   );
 
   if (status_code === "FINISHED" || status_code === "PUBLISHED") {
-    updateJob(jobId, { status: "publishing", step: "Publishing carousel" });
+    updateAccountProgress(jobId, acct.igUserId, {
+      status: "publishing",
+      step: "Publishing carousel",
+    });
 
-    const result = await publishContainer(job.parentContainerId);
-    updateJob(jobId, {
+    const result = await publishContainer(creds, acct.parentContainerId);
+    updateAccountProgress(jobId, acct.igUserId, {
       status: "complete",
       mediaId: result.id,
       step: "Published",
@@ -172,7 +196,7 @@ async function processParent(jobId: string) {
   }
 
   if (status_code === "ERROR") {
-    updateJob(jobId, {
+    updateAccountProgress(jobId, acct.igUserId, {
       status: "failed",
       error: error_message || "Parent container failed",
       step: "Parent container failed",
@@ -180,7 +204,7 @@ async function processParent(jobId: string) {
     return;
   }
 
-  updateJob(jobId, {
+  updateAccountProgress(jobId, acct.igUserId, {
     step: "Waiting for parent container to finish processing",
   });
 }

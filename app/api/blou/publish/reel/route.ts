@@ -1,14 +1,27 @@
 import { NextRequest, NextResponse } from "next/server";
 import {
-  ensureCredentials,
+  ensureAllCredentials,
   createReelContainer,
   pollContainerUntilFinished,
   publishContainer,
 } from "@/lib/instagram/graph";
+import type { InstagramCredentials } from "@/lib/instagram/graph";
+
+async function publishToAccount(
+  creds: InstagramCredentials,
+  videoUrl: string,
+  caption: string,
+) {
+  const containerId = await createReelContainer(creds, videoUrl, caption);
+  await pollContainerUntilFinished(creds, containerId);
+  const result = await publishContainer(creds, containerId);
+  return result.id;
+}
 
 export async function POST(request: NextRequest) {
+  let allCreds: InstagramCredentials[];
   try {
-    await ensureCredentials();
+    allCreds = await ensureAllCredentials();
   } catch {
     return NextResponse.json(
       { error: "Reconnect Instagram", code: "RECONNECT" },
@@ -34,23 +47,50 @@ export async function POST(request: NextRequest) {
     );
   }
 
-  try {
-    const containerId = await createReelContainer(videoUrl, caption ?? "");
-    await pollContainerUntilFinished(containerId);
-    const result = await publishContainer(containerId);
-    return NextResponse.json({ success: true, mediaId: result.id });
-  } catch (err) {
-    const error = err as Error & { status?: number };
-    if (error.status === 401) {
-      return NextResponse.json(
-        { error: "Reconnect Instagram", code: "RECONNECT" },
-        { status: 401 }
-      );
+  const results = await Promise.allSettled(
+    allCreds.map((creds) => publishToAccount(creds, videoUrl, caption ?? ""))
+  );
+
+  const accountResults = allCreds.map((creds, i) => {
+    const result = results[i];
+    if (result.status === "fulfilled") {
+      return {
+        igUserId: creds.igUserId,
+        username: creds.igUsername,
+        success: true,
+        mediaId: result.value,
+      };
     }
-    console.error("Reel publish error:", error);
+    const e = result.reason as Error & { status?: number };
+    return {
+      igUserId: creds.igUserId,
+      username: creds.igUsername,
+      success: false,
+      error: e.message || "Failed to publish reel",
+      needsReconnect: e.status === 401,
+    };
+  });
+
+  const allFailed = accountResults.every((r) => !r.success);
+  const anyNeedsReconnect = accountResults.some((r) => r.needsReconnect);
+
+  if (allFailed && anyNeedsReconnect) {
     return NextResponse.json(
-      { error: error.message || "Failed to publish reel" },
+      { error: "Reconnect Instagram", code: "RECONNECT", results: accountResults },
+      { status: 401 }
+    );
+  }
+
+  if (allFailed) {
+    return NextResponse.json(
+      { error: "Failed to publish reel to all accounts", results: accountResults },
       { status: 500 }
     );
   }
+
+  return NextResponse.json({
+    success: true,
+    results: accountResults,
+    mediaId: accountResults.find((r) => r.success)?.mediaId,
+  });
 }

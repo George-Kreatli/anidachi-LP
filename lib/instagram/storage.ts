@@ -1,5 +1,5 @@
 /**
- * Instagram credentials storage.
+ * Instagram credentials storage — supports multiple accounts.
  *
  * - In production (e.g. Vercel), uses Vercel Blob via BLOB_READ_WRITE_TOKEN.
  *   Set BLOB_ACCESS=public when using a public Blob store; omit or set "private" for a private store.
@@ -18,7 +18,6 @@ import {
 const CREDENTIALS_FILE = ".data/instagram-credentials.json";
 const BLOB_PATH = "instagram/credentials.json";
 
-/** "public" when using a Vercel Blob public store; "private" for a private store. Default: "private". */
 const BLOB_ACCESS = (process.env.BLOB_ACCESS ?? "private") as
   | "public"
   | "private";
@@ -30,33 +29,39 @@ export interface InstagramCredentials {
   igUsername: string;
 }
 
-async function getCredentialsPath(): Promise<string> {
-  return join(process.cwd(), CREDENTIALS_FILE);
-}
+// ---------------------------------------------------------------------------
+// Blob helpers
+// ---------------------------------------------------------------------------
 
-async function getFromBlob(): Promise<InstagramCredentials | null> {
+async function getAllFromBlob(): Promise<InstagramCredentials[]> {
   const token = process.env.BLOB_READ_WRITE_TOKEN;
-  if (!token) return null;
+  if (!token) return [];
 
   try {
     const result = await blobGet(BLOB_PATH, { access: BLOB_ACCESS, token });
-    if (!result || result.statusCode !== 200) return null;
+    if (!result || result.statusCode !== 200) return [];
 
     const text = await new Response(result.stream).text();
-    const parsed = JSON.parse(text) as InstagramCredentials;
-    if (!parsed.accessToken || !parsed.igUserId) return null;
-    if (parsed.tokenExpiry && Date.now() >= parsed.tokenExpiry) return null;
-    return parsed;
+    const parsed = JSON.parse(text);
+
+    // Migrate: if the stored data is a single object (old format), wrap it
+    if (!Array.isArray(parsed)) {
+      if (parsed.accessToken && parsed.igUserId) return [parsed];
+      return [];
+    }
+    return parsed.filter(
+      (c: InstagramCredentials) => c.accessToken && c.igUserId
+    );
   } catch {
-    return null;
+    return [];
   }
 }
 
-async function saveToBlob(creds: InstagramCredentials): Promise<void> {
+async function saveAllToBlob(accounts: InstagramCredentials[]): Promise<void> {
   const token = process.env.BLOB_READ_WRITE_TOKEN;
   if (!token) return;
 
-  await blobPut(BLOB_PATH, JSON.stringify(creds, null, 2), {
+  await blobPut(BLOB_PATH, JSON.stringify(accounts, null, 2), {
     access: BLOB_ACCESS,
     token,
     addRandomSuffix: false,
@@ -77,50 +82,109 @@ async function clearBlob(): Promise<void> {
   );
 }
 
-export async function getCredentials(): Promise<InstagramCredentials | null> {
-  // Prefer Blob in environments where it is configured (e.g. Vercel).
-  const blobCreds = await getFromBlob();
-  if (blobCreds) return blobCreds;
+// ---------------------------------------------------------------------------
+// Local filesystem helpers
+// ---------------------------------------------------------------------------
 
-  // Fallback: local filesystem (useful for localhost dev).
+function credentialsPath(): string {
+  return join(process.cwd(), CREDENTIALS_FILE);
+}
+
+async function getAllFromFile(): Promise<InstagramCredentials[]> {
   try {
-    const path = await getCredentialsPath();
-    const data = await readFile(path, "utf-8");
-    const parsed = JSON.parse(data) as InstagramCredentials;
-    if (!parsed.accessToken || !parsed.igUserId) return null;
-    if (parsed.tokenExpiry && Date.now() >= parsed.tokenExpiry) return null;
-    return parsed;
+    const data = await readFile(credentialsPath(), "utf-8");
+    const parsed = JSON.parse(data);
+    if (!Array.isArray(parsed)) {
+      if (parsed.accessToken && parsed.igUserId) return [parsed];
+      return [];
+    }
+    return parsed.filter(
+      (c: InstagramCredentials) => c.accessToken && c.igUserId
+    );
   } catch {
-    return null;
+    return [];
   }
 }
 
+async function saveAllToFile(accounts: InstagramCredentials[]): Promise<void> {
+  const dir = join(process.cwd(), ".data");
+  await mkdir(dir, { recursive: true });
+  await writeFile(credentialsPath(), JSON.stringify(accounts, null, 2), "utf-8");
+}
+
+// ---------------------------------------------------------------------------
+// Public API
+// ---------------------------------------------------------------------------
+
+/** Get all connected Instagram accounts. Filters out expired tokens. */
+export async function getAllCredentials(): Promise<InstagramCredentials[]> {
+  const useBlob = !!process.env.BLOB_READ_WRITE_TOKEN;
+  const accounts = useBlob ? await getAllFromBlob() : await getAllFromFile();
+  const now = Date.now();
+  return accounts.filter((c) => !c.tokenExpiry || now < c.tokenExpiry);
+}
+
+/** Get the first connected account (backwards-compat convenience). */
+export async function getCredentials(): Promise<InstagramCredentials | null> {
+  const all = await getAllCredentials();
+  return all[0] ?? null;
+}
+
+/** Get credentials for a specific account by igUserId. */
+export async function getCredentialsById(
+  igUserId: string,
+): Promise<InstagramCredentials | null> {
+  const all = await getAllCredentials();
+  return all.find((c) => c.igUserId === igUserId) ?? null;
+}
+
+/** Upsert credentials — adds a new account or updates an existing one. */
 export async function setCredentials(
   creds: InstagramCredentials,
 ): Promise<void> {
-  // Try Blob first; if not configured, fall back to filesystem.
-  if (process.env.BLOB_READ_WRITE_TOKEN) {
-    await saveToBlob(creds);
-    return;
+  const all = await getAllCredentials();
+  const idx = all.findIndex((c) => c.igUserId === creds.igUserId);
+  if (idx >= 0) {
+    all[idx] = creds;
+  } else {
+    all.push(creds);
   }
 
-  const dir = join(process.cwd(), ".data");
-  await mkdir(dir, { recursive: true });
-  const path = await getCredentialsPath();
-  await writeFile(path, JSON.stringify(creds, null, 2), "utf-8");
+  if (process.env.BLOB_READ_WRITE_TOKEN) {
+    await saveAllToBlob(all);
+  } else {
+    await saveAllToFile(all);
+  }
 }
 
-export async function clearCredentials(): Promise<void> {
-  if (process.env.BLOB_READ_WRITE_TOKEN) {
-    await clearBlob();
+/** Remove one account's credentials. */
+export async function clearCredentials(igUserId?: string): Promise<void> {
+  if (!igUserId) {
+    // Clear all (backwards-compat)
+    if (process.env.BLOB_READ_WRITE_TOKEN) {
+      await clearBlob();
+    } else {
+      try {
+        const { unlink } = await import("fs/promises");
+        await unlink(credentialsPath());
+      } catch { /* ignore */ }
+    }
     return;
   }
 
-  try {
-    const path = await getCredentialsPath();
-    const { unlink } = await import("fs/promises");
-    await unlink(path);
-  } catch {
-    // ignore if file doesn't exist
+  const all = await getAllCredentials();
+  const filtered = all.filter((c) => c.igUserId !== igUserId);
+
+  if (filtered.length === 0) {
+    await clearCredentials(); // delete the file/blob entirely
+  } else if (process.env.BLOB_READ_WRITE_TOKEN) {
+    await saveAllToBlob(filtered);
+  } else {
+    await saveAllToFile(filtered);
   }
+}
+
+/** Remove all accounts. */
+export async function clearAllCredentials(): Promise<void> {
+  await clearCredentials();
 }
