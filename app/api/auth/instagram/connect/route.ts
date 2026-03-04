@@ -38,10 +38,11 @@ export async function GET(request: NextRequest) {
 
   // Business Login for Instagram uses the instagram.com OAuth endpoint.
   const url = `https://www.instagram.com/oauth/authorize?${params.toString()}`;
+  const isSecure = origin.startsWith("https://");
   const response = NextResponse.json({ url });
   response.cookies.set("instagram_oauth_state", state, {
     httpOnly: true,
-    secure: true,
+    secure: isSecure,
     sameSite: "lax",
     maxAge: 10 * 60, // 10 minutes
     path: "/",

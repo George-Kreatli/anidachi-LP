@@ -24,12 +24,23 @@ type ShortLivedTokenResponse =
       error_message?: string;
     };
 
+function clearStateCookie(response: NextResponse, isSecure: boolean) {
+  response.cookies.set("instagram_oauth_state", "", {
+    httpOnly: true,
+    secure: isSecure,
+    sameSite: "lax",
+    maxAge: 0,
+    path: "/",
+  });
+}
+
 export async function GET(request: NextRequest) {
   const { searchParams } = request.nextUrl;
   const code = searchParams.get("code");
   const state = searchParams.get("state");
   const error = searchParams.get("error");
   const stateCookie = request.cookies.get("instagram_oauth_state")?.value;
+  const isSecure = request.nextUrl.protocol === "https:";
 
   const appId =
     process.env.INSTAGRAM_APP_ID || process.env.META_APP_ID || "";
@@ -49,13 +60,7 @@ export async function GET(request: NextRequest) {
     const redirect = NextResponse.redirect(
       new URL(`/blou/manager?error=${encodeURIComponent(error)}`, request.url)
     );
-    redirect.cookies.set("instagram_oauth_state", "", {
-      httpOnly: true,
-      secure: true,
-      sameSite: "lax",
-      maxAge: 0,
-      path: "/",
-    });
+    clearStateCookie(redirect, isSecure);
     return redirect;
   }
 
@@ -63,13 +68,7 @@ export async function GET(request: NextRequest) {
     const redirect = NextResponse.redirect(
       new URL("/blou/manager?error=missing_or_invalid_state", request.url)
     );
-    redirect.cookies.set("instagram_oauth_state", "", {
-      httpOnly: true,
-      secure: true,
-      sameSite: "lax",
-      maxAge: 0,
-      path: "/",
-    });
+    clearStateCookie(redirect, isSecure);
     return redirect;
   }
 
@@ -113,13 +112,7 @@ export async function GET(request: NextRequest) {
       const redirect = NextResponse.redirect(
         new URL(`/blou/manager?error=${encodeURIComponent(msg)}`, request.url)
       );
-      redirect.cookies.set("instagram_oauth_state", "", {
-        httpOnly: true,
-        secure: true,
-        sameSite: "lax",
-        maxAge: 0,
-        path: "/",
-      });
+      clearStateCookie(redirect, isSecure);
       return redirect;
     }
 
@@ -145,13 +138,7 @@ export async function GET(request: NextRequest) {
       const redirect = NextResponse.redirect(
         new URL(`/blou/manager?error=${encodeURIComponent(msg)}`, request.url)
       );
-      redirect.cookies.set("instagram_oauth_state", "", {
-        httpOnly: true,
-        secure: true,
-        sameSite: "lax",
-        maxAge: 0,
-        path: "/",
-      });
+      clearStateCookie(redirect, isSecure);
       return redirect;
     }
 
@@ -198,13 +185,7 @@ export async function GET(request: NextRequest) {
       const redirect = NextResponse.redirect(
         new URL("/blou/manager?error=no_instagram_account", request.url)
       );
-      redirect.cookies.set("instagram_oauth_state", "", {
-        httpOnly: true,
-        secure: true,
-        sameSite: "lax",
-        maxAge: 0,
-        path: "/",
-      });
+      clearStateCookie(redirect, isSecure);
       return redirect;
     }
 
@@ -218,26 +199,15 @@ export async function GET(request: NextRequest) {
     const redirect = NextResponse.redirect(
       new URL("/blou/manager?connected=1", request.url)
     );
-    redirect.cookies.set("instagram_oauth_state", "", {
-      httpOnly: true,
-      secure: true,
-      sameSite: "lax",
-      maxAge: 0,
-      path: "/",
-    });
+    clearStateCookie(redirect, isSecure);
     return redirect;
   } catch (err) {
     console.error("Instagram callback error:", err);
+    const msg = err instanceof Error ? err.message : "server_error";
     const redirect = NextResponse.redirect(
-      new URL("/blou/manager?error=server_error", request.url)
+      new URL(`/blou/manager?error=${encodeURIComponent(msg)}`, request.url)
     );
-    redirect.cookies.set("instagram_oauth_state", "", {
-      httpOnly: true,
-      secure: true,
-      sameSite: "lax",
-      maxAge: 0,
-      path: "/",
-    });
+    clearStateCookie(redirect, isSecure);
     return redirect;
   }
 }

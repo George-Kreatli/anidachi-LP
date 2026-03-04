@@ -1,4 +1,4 @@
-import { getCredentials } from "./storage";
+import { getCredentials, clearCredentials } from "./storage";
 
 /**
  * Instagram Graph API helpers (v21.0).
@@ -37,7 +37,10 @@ async function graphGet<T>(path: string, params: Record<string, string> = {}): P
     const isInvalidToken =
       msg.includes("invalid oauth access token") ||
       msg.includes("cannot parse access token") ||
-      msg.includes("access token") && (msg.includes("invalid") || msg.includes("expired"));
+      (msg.includes("access token") && (msg.includes("invalid") || msg.includes("expired")));
+    if (isInvalidToken) {
+      await clearCredentials();
+    }
     err.status = isInvalidToken ? 401 : res.status;
     throw err;
   }
@@ -64,6 +67,9 @@ async function graphPost(
       msg.includes("invalid oauth access token") ||
       msg.includes("cannot parse access token") ||
       (msg.includes("access token") && (msg.includes("invalid") || msg.includes("expired")));
+    if (isInvalidToken) {
+      await clearCredentials();
+    }
     err.status = isInvalidToken ? 401 : res.status;
     throw err;
   }

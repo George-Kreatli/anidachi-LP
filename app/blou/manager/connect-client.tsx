@@ -22,8 +22,9 @@ interface Status {
 const ERROR_MESSAGES: Record<string, string> = {
   no_pages: "No Facebook Page found. Link a Page to your account.",
   no_instagram_account: "No Instagram Business account linked to your Page.",
-  config: "Server configuration error (META_APP_ID / META_APP_SECRET).",
+  config: "Server configuration error (INSTAGRAM_APP_ID / INSTAGRAM_APP_SECRET).",
   missing_code: "OAuth callback missing code.",
+  missing_or_invalid_state: "OAuth session expired or was tampered with. Please try again.",
   server_error: "Server error. Try again.",
 };
 
