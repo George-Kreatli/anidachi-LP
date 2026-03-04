@@ -12,6 +12,9 @@ import { get as blobGet, put as blobPut, list as blobList, del as blobDel } from
 const CREDENTIALS_FILE = ".data/instagram-credentials.json";
 const BLOB_PATH = "instagram/credentials.json";
 
+/** "public" if you use a Vercel Blob public store; "private" for a private store. Default: "private". */
+const BLOB_ACCESS = (process.env.BLOB_ACCESS ?? "private") as "public" | "private";
+
 export interface InstagramCredentials {
   accessToken: string;
   tokenExpiry: number; // Unix timestamp (ms)
@@ -28,7 +31,7 @@ async function getFromBlob(): Promise<InstagramCredentials | null> {
   if (!token) return null;
 
   try {
-    const result = await blobGet(BLOB_PATH, { access: "private", token });
+    const result = await blobGet(BLOB_PATH, { access: BLOB_ACCESS, token });
     if (!result || result.statusCode !== 200) return null;
 
     const text = await new Response(result.stream).text();
@@ -46,7 +49,7 @@ async function saveToBlob(creds: InstagramCredentials): Promise<void> {
   if (!token) return;
 
   await blobPut(BLOB_PATH, JSON.stringify(creds, null, 2), {
-    access: "private",
+    access: BLOB_ACCESS,
     token,
     addRandomSuffix: false,
   });
