@@ -29,6 +29,7 @@ export async function GET(request: NextRequest) {
   const code = searchParams.get("code");
   const state = searchParams.get("state");
   const error = searchParams.get("error");
+  const stateCookie = request.cookies.get("instagram_oauth_state")?.value;
 
   const appId =
     process.env.INSTAGRAM_APP_ID || process.env.META_APP_ID || "";
@@ -45,15 +46,31 @@ export async function GET(request: NextRequest) {
   }
 
   if (error) {
-    return NextResponse.redirect(
+    const redirect = NextResponse.redirect(
       new URL(`/blou/manager?error=${encodeURIComponent(error)}`, request.url)
     );
+    redirect.cookies.set("instagram_oauth_state", "", {
+      httpOnly: true,
+      secure: true,
+      sameSite: "lax",
+      maxAge: 0,
+      path: "/",
+    });
+    return redirect;
   }
 
-  if (!code || !state) {
-    return NextResponse.redirect(
-      new URL("/blou/manager?error=missing_code", request.url)
+  if (!code || !state || !stateCookie || state !== stateCookie) {
+    const redirect = NextResponse.redirect(
+      new URL("/blou/manager?error=missing_or_invalid_state", request.url)
     );
+    redirect.cookies.set("instagram_oauth_state", "", {
+      httpOnly: true,
+      secure: true,
+      sameSite: "lax",
+      maxAge: 0,
+      path: "/",
+    });
+    return redirect;
   }
 
   try {
@@ -93,9 +110,17 @@ export async function GET(request: NextRequest) {
         tokenJson?.error_message ||
         tokenJson?.error_type ||
         "Token exchange failed";
-      return NextResponse.redirect(
+      const redirect = NextResponse.redirect(
         new URL(`/blou/manager?error=${encodeURIComponent(msg)}`, request.url)
       );
+      redirect.cookies.set("instagram_oauth_state", "", {
+        httpOnly: true,
+        secure: true,
+        sameSite: "lax",
+        maxAge: 0,
+        path: "/",
+      });
+      return redirect;
     }
 
     // Step 2: exchange short-lived token for a long-lived token (valid for ~60 days).
@@ -117,9 +142,17 @@ export async function GET(request: NextRequest) {
     if (!longLivedData.access_token) {
       const msg =
         longLivedData.error?.message || "Long-lived token exchange failed";
-      return NextResponse.redirect(
+      const redirect = NextResponse.redirect(
         new URL(`/blou/manager?error=${encodeURIComponent(msg)}`, request.url)
       );
+      redirect.cookies.set("instagram_oauth_state", "", {
+        httpOnly: true,
+        secure: true,
+        sameSite: "lax",
+        maxAge: 0,
+        path: "/",
+      });
+      return redirect;
     }
 
     const userToken = longLivedData.access_token;
@@ -162,9 +195,17 @@ export async function GET(request: NextRequest) {
     const igUsername = mePayload.username ?? "unknown";
 
     if (!igUserId) {
-      return NextResponse.redirect(
+      const redirect = NextResponse.redirect(
         new URL("/blou/manager?error=no_instagram_account", request.url)
       );
+      redirect.cookies.set("instagram_oauth_state", "", {
+        httpOnly: true,
+        secure: true,
+        sameSite: "lax",
+        maxAge: 0,
+        path: "/",
+      });
+      return redirect;
     }
 
     await setCredentials({
@@ -174,13 +215,29 @@ export async function GET(request: NextRequest) {
       igUsername,
     });
 
-    return NextResponse.redirect(
+    const redirect = NextResponse.redirect(
       new URL("/blou/manager?connected=1", request.url)
     );
+    redirect.cookies.set("instagram_oauth_state", "", {
+      httpOnly: true,
+      secure: true,
+      sameSite: "lax",
+      maxAge: 0,
+      path: "/",
+    });
+    return redirect;
   } catch (err) {
     console.error("Instagram callback error:", err);
-    return NextResponse.redirect(
+    const redirect = NextResponse.redirect(
       new URL("/blou/manager?error=server_error", request.url)
     );
+    redirect.cookies.set("instagram_oauth_state", "", {
+      httpOnly: true,
+      secure: true,
+      sameSite: "lax",
+      maxAge: 0,
+      path: "/",
+    });
+    return redirect;
   }
 }

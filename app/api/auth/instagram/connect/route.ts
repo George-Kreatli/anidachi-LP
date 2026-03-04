@@ -19,7 +19,7 @@ export async function GET(request: NextRequest) {
 
   if (!appId) {
     return NextResponse.json(
-      { error: "META_APP_ID is not configured" },
+      { error: "INSTAGRAM_APP_ID or META_APP_ID is not configured" },
       { status: 500 }
     );
   }
@@ -38,5 +38,13 @@ export async function GET(request: NextRequest) {
 
   // Business Login for Instagram uses the instagram.com OAuth endpoint.
   const url = `https://www.instagram.com/oauth/authorize?${params.toString()}`;
-  return NextResponse.json({ url });
+  const response = NextResponse.json({ url });
+  response.cookies.set("instagram_oauth_state", state, {
+    httpOnly: true,
+    secure: true,
+    sameSite: "lax",
+    maxAge: 10 * 60, // 10 minutes
+    path: "/",
+  });
+  return response;
 }

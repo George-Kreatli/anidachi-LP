@@ -2,7 +2,6 @@ import { NextResponse } from "next/server";
 
 export const dynamic = "force-dynamic";
 
-const REQUIRED = ["META_APP_ID", "META_APP_SECRET"] as const;
 const OPTIONAL = ["INSTAGRAM_OAUTH_REDIRECT_URI"] as const;
 
 /**
@@ -11,7 +10,17 @@ const OPTIONAL = ["INSTAGRAM_OAUTH_REDIRECT_URI"] as const;
  * Remove or restrict in production once done debugging.
  */
 export async function GET() {
-  const missing = REQUIRED.filter((key) => !process.env[key]?.trim());
+  const hasAppId =
+    (process.env.INSTAGRAM_APP_ID || process.env.META_APP_ID || "").trim()
+      .length > 0;
+  const hasAppSecret =
+    (process.env.INSTAGRAM_APP_SECRET || process.env.META_APP_SECRET || "").trim()
+      .length > 0;
+
+  const missing: string[] = [];
+  if (!hasAppId) missing.push("INSTAGRAM_APP_ID or META_APP_ID");
+  if (!hasAppSecret) missing.push("INSTAGRAM_APP_SECRET or META_APP_SECRET");
+
   const optionalSet = OPTIONAL.filter((key) => process.env[key]?.trim());
   const ok = missing.length === 0;
 

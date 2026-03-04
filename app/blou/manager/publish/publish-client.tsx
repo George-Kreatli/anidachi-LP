@@ -266,6 +266,17 @@ export function PublishClient() {
     carouselFiles.length <= CAROUSEL_MAX_ITEMS &&
     !carouselError;
 
+  if (connected === null) {
+    return (
+      <Card className="border-teal-100 bg-white shadow-sm">
+        <CardContent className="pt-6 flex items-center gap-2 text-stone-600">
+          <Loader2 className="h-4 w-4 animate-spin text-teal-600" />
+          <span>Checking Instagram connection…</span>
+        </CardContent>
+      </Card>
+    );
+  }
+
   if (connected === false) {
     return (
       <Card className="border-teal-100 bg-white shadow-sm">

@@ -1,11 +1,10 @@
-/**
- * Instagram Graph API helpers (v21.0).
- * Base URL: https://graph.facebook.com/v21.0
- */
-
 import { getCredentials } from "./storage";
 
-const GRAPH_BASE = "https://graph.facebook.com/v21.0";
+/**
+ * Instagram Graph API helpers (v21.0).
+ * Host URL for Instagram Login: https://graph.instagram.com/v21.0
+ */
+const GRAPH_BASE = "https://graph.instagram.com/v21.0";
 const POLL_INTERVAL_MS = 5000;
 const POLL_TIMEOUT_MS = 5 * 60 * 1000; // 5 minutes
 
