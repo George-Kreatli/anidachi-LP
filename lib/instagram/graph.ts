@@ -34,7 +34,12 @@ async function graphGet<T>(path: string, params: Record<string, string> = {}): P
   const data = (await res.json()) as T & { error?: { message: string; code?: number } };
   if (data.error) {
     const err = new Error(data.error.message) as Error & { status?: number };
-    err.status = res.status;
+    const msg = (data.error.message || "").toLowerCase();
+    const isInvalidToken =
+      msg.includes("invalid oauth access token") ||
+      msg.includes("cannot parse access token") ||
+      msg.includes("access token") && (msg.includes("invalid") || msg.includes("expired"));
+    err.status = isInvalidToken ? 401 : res.status;
     throw err;
   }
   return data;
@@ -55,7 +60,12 @@ async function graphPost(
   const data = (await res.json()) as { id?: string; error?: { message: string } };
   if (data.error) {
     const err = new Error(data.error.message) as Error & { status?: number };
-    err.status = res.status;
+    const msg = (data.error.message || "").toLowerCase();
+    const isInvalidToken =
+      msg.includes("invalid oauth access token") ||
+      msg.includes("cannot parse access token") ||
+      (msg.includes("access token") && (msg.includes("invalid") || msg.includes("expired")));
+    err.status = isInvalidToken ? 401 : res.status;
     throw err;
   }
   return data;

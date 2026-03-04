@@ -37,12 +37,21 @@ async function getFromBlob(): Promise<InstagramCredentials | null> {
   if (!token) return null;
 
   try {
-    const result = await blobGet(BLOB_PATH, { access: BLOB_ACCESS, token });
-    if (!result || result.statusCode !== 200) return null;
+    const result = await blobGet(BLOB_PATH, {
+      access: BLOB_ACCESS,
+      token,
+      useCache: false,
+      ...(BLOB_ACCESS === "public" && {
+        headers: { "Cache-Control": "no-cache", Pragma: "no-cache" },
+      }),
+    });
+    if (!result || result.statusCode !== 200 || !result.stream) return null;
 
     const text = await new Response(result.stream).text();
     const parsed = JSON.parse(text) as InstagramCredentials;
     if (!parsed.accessToken || !parsed.igUserId) return null;
+    parsed.accessToken = parsed.accessToken.trim();
+    if (parsed.accessToken.length < 20) return null;
     if (parsed.tokenExpiry && Date.now() >= parsed.tokenExpiry) return null;
     return parsed;
   } catch {
@@ -85,6 +94,8 @@ export async function getCredentials(): Promise<InstagramCredentials | null> {
     const data = await readFile(path, "utf-8");
     const parsed = JSON.parse(data) as InstagramCredentials;
     if (!parsed.accessToken || !parsed.igUserId) return null;
+    parsed.accessToken = parsed.accessToken.trim();
+    if (!parsed.accessToken) return null;
     if (parsed.tokenExpiry && Date.now() >= parsed.tokenExpiry) return null;
     return parsed;
   } catch {
