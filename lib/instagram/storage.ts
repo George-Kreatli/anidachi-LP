@@ -2,17 +2,23 @@
  * Instagram credentials storage.
  *
  * - In production (e.g. Vercel), uses Vercel Blob via BLOB_READ_WRITE_TOKEN.
+ *   Set BLOB_ACCESS=public when using a public Blob store; omit or set "private" for a private store.
  * - In local dev (or when no Blob token), falls back to a JSON file in .data/.
  */
 
 import { readFile, writeFile, mkdir } from "fs/promises";
 import { join } from "path";
-import { get as blobGet, put as blobPut, list as blobList, del as blobDel } from "@vercel/blob";
+import {
+  get as blobGet,
+  put as blobPut,
+  list as blobList,
+  del as blobDel,
+} from "@vercel/blob";
 
 const CREDENTIALS_FILE = ".data/instagram-credentials.json";
 const BLOB_PATH = "instagram/credentials.json";
 
-/** "public" if you use a Vercel Blob public store; "private" for a private store. Default: "private". */
+/** "public" when using a Vercel Blob public store; "private" for a private store. Default: "private". */
 const BLOB_ACCESS = (process.env.BLOB_ACCESS ?? "private") as "public" | "private";
 
 export interface InstagramCredentials {
@@ -64,7 +70,7 @@ async function clearBlob(): Promise<void> {
 
   await blobDel(
     blobs.map((b) => b.url),
-    { token }
+    { token },
   );
 }
 
@@ -86,7 +92,9 @@ export async function getCredentials(): Promise<InstagramCredentials | null> {
   }
 }
 
-export async function setCredentials(creds: InstagramCredentials): Promise<void> {
+export async function setCredentials(
+  creds: InstagramCredentials,
+): Promise<void> {
   // Try Blob first; if not configured, fall back to filesystem.
   if (process.env.BLOB_READ_WRITE_TOKEN) {
     await saveToBlob(creds);
