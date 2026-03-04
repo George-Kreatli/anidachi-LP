@@ -60,6 +60,7 @@ async function saveToBlob(creds: InstagramCredentials): Promise<void> {
     access: BLOB_ACCESS,
     token,
     addRandomSuffix: false,
+    allowOverwrite: true,
   });
 }
 
