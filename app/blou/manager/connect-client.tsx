@@ -11,69 +11,94 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
-import { Instagram, Loader2 } from "lucide-react";
+import { Instagram, Loader2, Music2 } from "lucide-react";
 
-interface Account {
+interface IgAccount {
   igUserId: string;
   username: string;
   connected: boolean;
 }
 
-interface Status {
+interface TtAccount {
+  openId: string;
+  username: string;
+  avatarUrl?: string;
   connected: boolean;
-  accounts: Account[];
 }
 
-const MAX_ACCOUNTS = 2;
+interface IgStatus {
+  connected: boolean;
+  accounts: IgAccount[];
+}
+
+interface TtStatus {
+  connected: boolean;
+  accounts: TtAccount[];
+}
+
+const MAX_IG_ACCOUNTS = 2;
+const MAX_TT_ACCOUNTS = 2;
 
 const ERROR_MESSAGES: Record<string, string> = {
   no_pages: "No Facebook Page found. Link a Page to your account.",
   no_instagram_account: "No Instagram Business account linked to your Page.",
   config: "Server configuration error (INSTAGRAM_APP_ID / INSTAGRAM_APP_SECRET).",
+  tiktok_config: "Server configuration error (TIKTOK_CLIENT_KEY / TIKTOK_CLIENT_SECRET).",
   missing_code: "OAuth callback missing code.",
   missing_or_invalid_state: "OAuth session expired or was tampered with. Please try again.",
+  tiktok_invalid_state: "TikTok OAuth session expired. Please try again.",
   server_error: "Server error. Try again.",
 };
 
 export function ConnectClient() {
   const searchParams = useSearchParams();
-  const [status, setStatus] = useState<Status | null>(null);
+  const [igStatus, setIgStatus] = useState<IgStatus | null>(null);
+  const [ttStatus, setTtStatus] = useState<TtStatus | null>(null);
   const [loading, setLoading] = useState(true);
-  const [connecting, setConnecting] = useState(false);
+  const [connectingIg, setConnectingIg] = useState(false);
+  const [connectingTt, setConnectingTt] = useState(false);
   const [disconnectingId, setDisconnectingId] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
   const urlError = searchParams.get("error");
 
   useEffect(() => {
-    fetch("/api/auth/instagram/status")
-      .then((res) => res.json())
-      .then((data: Status) => {
-        setStatus(data);
-        setError(null);
-      })
-      .catch(() => setStatus({ connected: false, accounts: [] }))
-      .finally(() => setLoading(false));
+    Promise.all([
+      fetch("/api/auth/instagram/status")
+        .then((r) => r.json())
+        .then((d: IgStatus) => setIgStatus(d))
+        .catch(() => setIgStatus({ connected: false, accounts: [] })),
+      fetch("/api/auth/tiktok/status")
+        .then((r) => r.json())
+        .then((d: TtStatus) => setTtStatus(d))
+        .catch(() => setTtStatus({ connected: false, accounts: [] })),
+    ]).finally(() => setLoading(false));
   }, []);
 
-  const handleConnect = async () => {
-    setConnecting(true);
+  const handleConnectIg = async () => {
+    setConnectingIg(true);
     setError(null);
     try {
       const res = await fetch("/api/auth/instagram/connect");
       const data = await res.json();
-      if (data.url) {
-        window.location.href = data.url;
-        return;
-      }
+      if (data.url) { window.location.href = data.url; return; }
       setError(data.error || "Could not get OAuth URL");
-    } catch {
-      setError("Network error");
-    } finally {
-      setConnecting(false);
-    }
+    } catch { setError("Network error"); }
+    finally { setConnectingIg(false); }
   };
 
-  const handleDisconnect = async (igUserId: string) => {
+  const handleConnectTt = async () => {
+    setConnectingTt(true);
+    setError(null);
+    try {
+      const res = await fetch("/api/auth/tiktok/connect");
+      const data = await res.json();
+      if (data.url) { window.location.href = data.url; return; }
+      setError(data.error || "Could not get OAuth URL");
+    } catch { setError("Network error"); }
+    finally { setConnectingTt(false); }
+  };
+
+  const handleDisconnectIg = async (igUserId: string) => {
     setDisconnectingId(igUserId);
     setError(null);
     try {
@@ -82,16 +107,31 @@ export function ConnectClient() {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ igUserId }),
       });
-      setStatus((prev) => {
+      setIgStatus((prev) => {
         if (!prev) return prev;
         const accounts = prev.accounts.filter((a) => a.igUserId !== igUserId);
         return { connected: accounts.length > 0, accounts };
       });
-    } catch {
-      setError("Failed to disconnect");
-    } finally {
-      setDisconnectingId(null);
-    }
+    } catch { setError("Failed to disconnect"); }
+    finally { setDisconnectingId(null); }
+  };
+
+  const handleDisconnectTt = async (openId: string) => {
+    setDisconnectingId(openId);
+    setError(null);
+    try {
+      await fetch("/api/auth/tiktok/disconnect", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ openId }),
+      });
+      setTtStatus((prev) => {
+        if (!prev) return prev;
+        const accounts = prev.accounts.filter((a) => a.openId !== openId);
+        return { connected: accounts.length > 0, accounts };
+      });
+    } catch { setError("Failed to disconnect"); }
+    finally { setDisconnectingId(null); }
   };
 
   if (loading) {
@@ -102,32 +142,36 @@ export function ConnectClient() {
     );
   }
 
-  const accounts = status?.accounts ?? [];
-  const canAddMore = accounts.length < MAX_ACCOUNTS;
+  const igAccounts = igStatus?.accounts ?? [];
+  const ttAccounts = ttStatus?.accounts ?? [];
+  const canAddIg = igAccounts.length < MAX_IG_ACCOUNTS;
+  const canAddTt = ttAccounts.length < MAX_TT_ACCOUNTS;
+  const hasAnyAccount = igAccounts.length > 0 || ttAccounts.length > 0;
 
   return (
-    <div className="max-w-md mx-auto">
+    <div className="max-w-md mx-auto space-y-6">
+      {(urlError || error) && (
+        <p className="text-sm text-red-600 bg-red-50 p-3 rounded-lg">
+          {error ?? (urlError ? (ERROR_MESSAGES[urlError] ?? urlError.replace(/_/g, " ")) : "Connection failed.")}
+        </p>
+      )}
+
+      {/* Instagram Card */}
       <Card className="border-teal-100 bg-white shadow-sm">
         <CardHeader>
           <CardTitle className="flex items-center gap-2 text-teal-800">
             <Instagram className="h-5 w-5" />
-            Instagram Connections
+            Instagram
           </CardTitle>
           <CardDescription>
-            Connect up to {MAX_ACCOUNTS} Instagram Business accounts. Posts will
-            be published to all connected accounts simultaneously.
+            Connect up to {MAX_IG_ACCOUNTS} Instagram Business accounts.
+            Posts publish directly to all connected accounts.
           </CardDescription>
         </CardHeader>
         <CardContent className="space-y-4">
-          {(urlError || error) && (
-            <p className="text-sm text-red-600 bg-red-50 p-3 rounded-lg">
-              {error ?? (urlError ? (ERROR_MESSAGES[urlError] ?? urlError.replace(/_/g, " ")) : "Connection failed.")}
-            </p>
-          )}
-
-          {accounts.length > 0 && (
+          {igAccounts.length > 0 && (
             <div className="space-y-3">
-              {accounts.map((account) => (
+              {igAccounts.map((account) => (
                 <div
                   key={account.igUserId}
                   className="flex items-center justify-between p-3 rounded-lg bg-teal-50/50 border border-teal-100"
@@ -139,48 +183,97 @@ export function ConnectClient() {
                     variant="outline"
                     size="sm"
                     className="border-teal-200 text-teal-700 hover:bg-teal-50"
-                    onClick={() => handleDisconnect(account.igUserId)}
+                    onClick={() => handleDisconnectIg(account.igUserId)}
                     disabled={disconnectingId === account.igUserId}
                   >
-                    {disconnectingId === account.igUserId
-                      ? "Disconnecting\u2026"
-                      : "Disconnect"}
+                    {disconnectingId === account.igUserId ? "Disconnecting\u2026" : "Disconnect"}
                   </Button>
                 </div>
               ))}
             </div>
           )}
-
-          <div className="flex gap-3">
-            {canAddMore && (
-              <Button
-                className="flex-1 bg-teal-600 hover:bg-teal-700"
-                onClick={handleConnect}
-                disabled={connecting}
-              >
-                {connecting ? (
-                  <>
-                    <Loader2 className="h-4 w-4 animate-spin" />
-                    Connecting&hellip;
-                  </>
-                ) : (
-                  <>
-                    <Instagram className="h-4 w-4" />
-                    {accounts.length === 0
-                      ? "Connect Instagram"
-                      : "Connect Another Account"}
-                  </>
-                )}
-              </Button>
-            )}
-            {accounts.length > 0 && (
-              <Button asChild className="flex-1 bg-teal-600 hover:bg-teal-700">
-                <Link href="/blou/manager/publish">Go to Publish</Link>
-              </Button>
-            )}
-          </div>
+          {canAddIg && (
+            <Button
+              className="w-full bg-teal-600 hover:bg-teal-700"
+              onClick={handleConnectIg}
+              disabled={connectingIg}
+            >
+              {connectingIg ? (
+                <><Loader2 className="h-4 w-4 animate-spin" /> Connecting&hellip;</>
+              ) : (
+                <><Instagram className="h-4 w-4" /> {igAccounts.length === 0 ? "Connect Instagram" : "Connect Another"}</>
+              )}
+            </Button>
+          )}
         </CardContent>
       </Card>
+
+      {/* TikTok Card */}
+      <Card className="border-teal-100 bg-white shadow-sm">
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2 text-teal-800">
+            <Music2 className="h-5 w-5" />
+            TikTok
+          </CardTitle>
+          <CardDescription>
+            Connect up to {MAX_TT_ACCOUNTS} TikTok accounts.
+            Content is sent to your TikTok inbox as a draft for you to review and publish.
+          </CardDescription>
+        </CardHeader>
+        <CardContent className="space-y-4">
+          {ttAccounts.length > 0 && (
+            <div className="space-y-3">
+              {ttAccounts.map((account) => (
+                <div
+                  key={account.openId}
+                  className="flex items-center justify-between p-3 rounded-lg bg-teal-50/50 border border-teal-100"
+                >
+                  <div className="flex items-center gap-2">
+                    {account.avatarUrl && (
+                      <img
+                        src={account.avatarUrl}
+                        alt=""
+                        className="h-6 w-6 rounded-full"
+                      />
+                    )}
+                    <p className="text-sm text-stone-600">
+                      <strong className="text-teal-700">@{account.username}</strong>
+                    </p>
+                  </div>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    className="border-teal-200 text-teal-700 hover:bg-teal-50"
+                    onClick={() => handleDisconnectTt(account.openId)}
+                    disabled={disconnectingId === account.openId}
+                  >
+                    {disconnectingId === account.openId ? "Disconnecting\u2026" : "Disconnect"}
+                  </Button>
+                </div>
+              ))}
+            </div>
+          )}
+          {canAddTt && (
+            <Button
+              className="w-full bg-teal-600 hover:bg-teal-700"
+              onClick={handleConnectTt}
+              disabled={connectingTt}
+            >
+              {connectingTt ? (
+                <><Loader2 className="h-4 w-4 animate-spin" /> Connecting&hellip;</>
+              ) : (
+                <><Music2 className="h-4 w-4" /> {ttAccounts.length === 0 ? "Connect TikTok" : "Connect Another"}</>
+              )}
+            </Button>
+          )}
+        </CardContent>
+      </Card>
+
+      {hasAnyAccount && (
+        <Button asChild className="w-full bg-teal-600 hover:bg-teal-700">
+          <Link href="/blou/manager/publish">Go to Publish</Link>
+        </Button>
+      )}
     </div>
   );
 }
