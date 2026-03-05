@@ -3,7 +3,7 @@ import Link from "next/link";
 
 export const metadata: Metadata = {
   title: "Blou Content Manager",
-  description: "Internal tool to publish reels and carousels to Instagram.",
+  description: "Internal tool to publish reels and carousels to Instagram and TikTok.",
 };
 
 export default function ManagerLayout({

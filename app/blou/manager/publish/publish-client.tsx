@@ -17,6 +17,11 @@ import {
   GripVertical,
   X,
   Upload,
+  Instagram,
+  Music2,
+  CheckCircle2,
+  XCircle,
+  Inbox,
 } from "lucide-react";
 
 type PublishStatus =
@@ -24,9 +29,20 @@ type PublishStatus =
   | "uploading"
   | "processing"
   | "success"
+  | "partial"
   | "error";
 
 type TabType = "reel" | "carousel";
+
+interface AccountResult {
+  platform: "instagram" | "tiktok";
+  accountId: string;
+  username: string;
+  success: boolean;
+  mediaId?: string;
+  status?: string;
+  error?: string;
+}
 
 const REEL_MAX_DURATION_SEC = 90;
 const CAROUSEL_VIDEO_MAX_SEC = 60;
@@ -36,7 +52,9 @@ const IMAGE_MIN_WIDTH = 600;
 
 export function PublishClient() {
   const [tab, setTab] = useState<TabType>("reel");
-  const [connected, setConnected] = useState<boolean | null>(null);
+  const [igCount, setIgCount] = useState(0);
+  const [ttCount, setTtCount] = useState(0);
+  const [loading, setLoading] = useState(true);
   const [reelFile, setReelFile] = useState<File | null>(null);
   const [reelDuration, setReelDuration] = useState<number | null>(null);
   const [reelError, setReelError] = useState<string | null>(null);
@@ -45,14 +63,21 @@ export function PublishClient() {
   const [caption, setCaption] = useState("");
   const [status, setStatus] = useState<PublishStatus>("idle");
   const [statusMessage, setStatusMessage] = useState<string | null>(null);
+  const [accountResults, setAccountResults] = useState<AccountResult[]>([]);
   const reelInputRef = useRef<HTMLInputElement>(null);
   const carouselInputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
-    fetch("/api/auth/instagram/status")
-      .then((r) => r.json())
-      .then((d: { connected?: boolean }) => setConnected(!!d.connected))
-      .catch(() => setConnected(false));
+    Promise.all([
+      fetch("/api/auth/instagram/status")
+        .then((r) => r.json())
+        .then((d: { accounts?: unknown[] }) => setIgCount(d.accounts?.length ?? 0))
+        .catch(() => setIgCount(0)),
+      fetch("/api/auth/tiktok/status")
+        .then((r) => r.json())
+        .then((d: { accounts?: unknown[] }) => setTtCount(d.accounts?.length ?? 0))
+        .catch(() => setTtCount(0)),
+    ]).finally(() => setLoading(false));
   }, []);
 
   const checkReelVideo = (file: File): Promise<{ duration: number; error?: string }> => {
@@ -157,11 +182,36 @@ export function PublishClient() {
     });
   };
 
+  const handleResults = (data: { success?: boolean; results?: AccountResult[] }) => {
+    const results = data.results ?? [];
+    setAccountResults(results);
+
+    const succeeded = results.filter((r) => r.success);
+    const failed = results.filter((r) => !r.success);
+
+    if (succeeded.length === results.length) {
+      setStatus("success");
+      const inboxCount = succeeded.filter((r) => r.status === "sent_to_inbox").length;
+      const publishedCount = succeeded.filter((r) => r.status !== "sent_to_inbox").length;
+      const parts: string[] = [];
+      if (publishedCount > 0) parts.push(`Published to ${publishedCount} account${publishedCount > 1 ? "s" : ""}`);
+      if (inboxCount > 0) parts.push(`Sent to ${inboxCount} TikTok inbox${inboxCount > 1 ? "es" : ""}`);
+      setStatusMessage(parts.join(". ") + ".");
+    } else if (succeeded.length > 0) {
+      setStatus("partial");
+      setStatusMessage(`${succeeded.length} succeeded, ${failed.length} failed.`);
+    } else {
+      setStatus("error");
+      setStatusMessage(failed[0]?.error || "Failed to publish.");
+    }
+  };
+
   const publishReel = async () => {
     if (!reelFile) return;
     setStatus("uploading");
-    setStatusMessage("Uploading video…");
+    setStatusMessage("Uploading video\u2026");
     setReelError(null);
+    setAccountResults([]);
     try {
       const form = new FormData();
       form.append("file", reelFile);
@@ -177,27 +227,28 @@ export function PublishClient() {
       }
       const videoUrl = uploadData.url;
       setStatus("processing");
-      setStatusMessage("Publishing to Instagram…");
+      setStatusMessage("Publishing to all accounts\u2026");
       const publishRes = await fetch("/api/blou/publish/reel", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ videoUrl, caption }),
       });
       const publishData = await publishRes.json();
-      if (!publishRes.ok) {
+      if (!publishRes.ok && !publishData.results) {
         if (publishRes.status === 401) {
-          setStatusMessage("Reconnect Instagram from the Connect page.");
+          setStatusMessage("Reconnect accounts from the Connect page.");
         } else {
           setStatusMessage(publishData.error || "Publish failed");
         }
         setStatus("error");
         return;
       }
-      setStatus("success");
-      setStatusMessage("Reel published.");
-      setReelFile(null);
-      setReelDuration(null);
-      setCaption("");
+      handleResults(publishData);
+      if (status !== "error") {
+        setReelFile(null);
+        setReelDuration(null);
+        setCaption("");
+      }
     } catch {
       setStatus("error");
       setStatusMessage("Network error. Try again.");
@@ -210,8 +261,9 @@ export function PublishClient() {
       return;
     }
     setStatus("uploading");
-    setStatusMessage("Uploading files…");
+    setStatusMessage("Uploading files\u2026");
     setCarouselError(null);
+    setAccountResults([]);
     try {
       const urls: { url: string; type: "image" | "video" }[] = [];
       for (const item of carouselFiles) {
@@ -230,26 +282,27 @@ export function PublishClient() {
         urls.push({ url: uploadData.url, type: item.type });
       }
       setStatus("processing");
-      setStatusMessage("Publishing carousel…");
+      setStatusMessage("Publishing to all accounts\u2026");
       const publishRes = await fetch("/api/blou/publish/carousel", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ mediaUrls: urls, caption }),
       });
       const publishData = await publishRes.json();
-      if (!publishRes.ok) {
+      if (!publishRes.ok && !publishData.results) {
         if (publishRes.status === 401) {
-          setStatusMessage("Reconnect Instagram from the Connect page.");
+          setStatusMessage("Reconnect accounts from the Connect page.");
         } else {
           setStatusMessage(publishData.error || "Publish failed");
         }
         setStatus("error");
         return;
       }
-      setStatus("success");
-      setStatusMessage("Carousel published.");
-      setCarouselFiles([]);
-      setCaption("");
+      handleResults(publishData);
+      if (status !== "error") {
+        setCarouselFiles([]);
+        setCaption("");
+      }
     } catch {
       setStatus("error");
       setStatusMessage("Network error. Try again.");
@@ -259,6 +312,7 @@ export function PublishClient() {
   const canPublish =
     status === "idle" ||
     status === "success" ||
+    status === "partial" ||
     status === "error";
   const isReelValid = reelFile && !reelError;
   const isCarouselValid =
@@ -266,26 +320,28 @@ export function PublishClient() {
     carouselFiles.length <= CAROUSEL_MAX_ITEMS &&
     !carouselError;
 
-  if (connected === null) {
+  const totalAccounts = igCount + ttCount;
+
+  if (loading) {
     return (
       <Card className="border-teal-100 bg-white shadow-sm">
         <CardContent className="pt-6 flex items-center gap-2 text-stone-600">
           <Loader2 className="h-4 w-4 animate-spin text-teal-600" />
-          <span>Checking Instagram connection…</span>
+          <span>Checking connections\u2026</span>
         </CardContent>
       </Card>
     );
   }
 
-  if (connected === false) {
+  if (totalAccounts === 0) {
     return (
       <Card className="border-teal-100 bg-white shadow-sm">
         <CardContent className="pt-6">
           <p className="text-stone-600 mb-4">
-            Connect your Instagram Business account first to publish content.
+            Connect at least one Instagram or TikTok account to publish content.
           </p>
           <Button asChild className="bg-teal-600 hover:bg-teal-700">
-            <Link href="/blou/manager">Connect Instagram</Link>
+            <Link href="/blou/manager">Connect Accounts</Link>
           </Button>
         </CardContent>
       </Card>
@@ -294,6 +350,22 @@ export function PublishClient() {
 
   return (
     <div className="max-w-2xl">
+      {/* Connected accounts summary */}
+      <div className="flex flex-wrap gap-3 mb-6">
+        {igCount > 0 && (
+          <span className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-teal-50 border border-teal-200 text-sm text-teal-700">
+            <Instagram className="h-3.5 w-3.5" />
+            {igCount} Instagram {igCount === 1 ? "account" : "accounts"}
+          </span>
+        )}
+        {ttCount > 0 && (
+          <span className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-teal-50 border border-teal-200 text-sm text-teal-700">
+            <Music2 className="h-3.5 w-3.5" />
+            {ttCount} TikTok {ttCount === 1 ? "account" : "accounts"}
+          </span>
+        )}
+      </div>
+
       <div className="flex gap-2 border-b border-teal-200 mb-6">
         <button
           type="button"
@@ -305,7 +377,7 @@ export function PublishClient() {
           }`}
         >
           <Film className="inline h-4 w-4 mr-2" />
-          Reel
+          Reel / Video
         </button>
         <button
           type="button"
@@ -324,37 +396,71 @@ export function PublishClient() {
       <Card className="border-teal-100 bg-white shadow-sm">
         <CardHeader>
           <CardTitle className="text-teal-800">
-            {tab === "reel" ? "Publish a Reel" : "Publish a Carousel"}
+            {tab === "reel" ? "Publish a Reel / Video" : "Publish a Carousel"}
           </CardTitle>
           <CardDescription>
             {tab === "reel"
-              ? "Upload a video (MP4/MOV, max 90 sec, 9:16 recommended) and add a caption."
-              : `Upload 2–10 images or videos (JPEG min 600px wide; videos max 60 sec). First item sets crop.`}
+              ? "Upload a video (MP4/MOV, max 90 sec). Posts as Instagram Reel and TikTok video (draft)."
+              : `Upload 2\u201310 images or videos. Posts as Instagram Carousel and TikTok photo post (draft).`}
           </CardDescription>
         </CardHeader>
         <CardContent className="space-y-4">
-          {status !== "idle" && status !== "success" && status !== "error" && (
+          {(status === "uploading" || status === "processing") && (
             <p className="text-sm text-teal-700 flex items-center gap-2">
               <Loader2 className="h-4 w-4 animate-spin" />
               {statusMessage}
             </p>
           )}
-          {(status === "error" || status === "success") && statusMessage && (
-            <p
+
+          {(status === "error" || status === "success" || status === "partial") && statusMessage && (
+            <div
               className={`text-sm p-3 rounded-lg ${
                 status === "success"
                   ? "text-teal-800 bg-teal-50"
+                  : status === "partial"
+                  ? "text-amber-800 bg-amber-50"
                   : "text-red-600 bg-red-50"
               }`}
             >
-              {statusMessage}
-            </p>
+              <p className="font-medium">{statusMessage}</p>
+
+              {accountResults.length > 0 && (
+                <ul className="mt-2 space-y-1">
+                  {accountResults.map((r) => (
+                    <li key={`${r.platform}-${r.accountId}`} className="flex items-center gap-2">
+                      {r.platform === "instagram" ? (
+                        <Instagram className="h-3.5 w-3.5 shrink-0" />
+                      ) : (
+                        <Music2 className="h-3.5 w-3.5 shrink-0" />
+                      )}
+                      <span className="font-medium">@{r.username}</span>
+                      {r.success ? (
+                        r.status === "sent_to_inbox" ? (
+                          <span className="flex items-center gap-1 text-teal-600">
+                            <Inbox className="h-3.5 w-3.5" /> Sent to inbox
+                          </span>
+                        ) : (
+                          <span className="flex items-center gap-1 text-teal-600">
+                            <CheckCircle2 className="h-3.5 w-3.5" /> Published
+                          </span>
+                        )
+                      ) : (
+                        <span className="flex items-center gap-1 text-red-500">
+                          <XCircle className="h-3.5 w-3.5" /> {r.error}
+                        </span>
+                      )}
+                    </li>
+                  ))}
+                </ul>
+              )}
+            </div>
           )}
-          {status === "success" && (
+
+          {(status === "success" || status === "partial") && (
             <Button
               variant="outline"
               size="sm"
-              onClick={() => setStatus("idle")}
+              onClick={() => { setStatus("idle"); setAccountResults([]); }}
               className="border-teal-200"
             >
               Publish another
@@ -362,87 +468,83 @@ export function PublishClient() {
           )}
 
           {tab === "reel" && (
-            <>
-              <div>
-                <label className="block text-sm font-medium text-stone-700 mb-1">
-                  Video
-                </label>
-                <input
-                  ref={reelInputRef}
-                  type="file"
-                  accept="video/mp4,video/quicktime,.mp4,.mov"
-                  onChange={handleReelFileChange}
-                  className="block w-full text-sm text-stone-600 file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:bg-teal-50 file:text-teal-700"
-                />
-                {reelFile && (
-                  <p className="mt-1 text-sm text-stone-500">
-                    {reelFile.name}
-                    {reelDuration != null && ` · ${reelDuration.toFixed(1)}s`}
-                  </p>
-                )}
-                {reelError && (
-                  <p className="mt-1 text-sm text-red-600">{reelError}</p>
-                )}
-              </div>
-            </>
+            <div>
+              <label className="block text-sm font-medium text-stone-700 mb-1">
+                Video
+              </label>
+              <input
+                ref={reelInputRef}
+                type="file"
+                accept="video/mp4,video/quicktime,.mp4,.mov"
+                onChange={handleReelFileChange}
+                className="block w-full text-sm text-stone-600 file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:bg-teal-50 file:text-teal-700"
+              />
+              {reelFile && (
+                <p className="mt-1 text-sm text-stone-500">
+                  {reelFile.name}
+                  {reelDuration != null && ` \u00b7 ${reelDuration.toFixed(1)}s`}
+                </p>
+              )}
+              {reelError && (
+                <p className="mt-1 text-sm text-red-600">{reelError}</p>
+              )}
+            </div>
           )}
 
           {tab === "carousel" && (
-            <>
-              <div>
-                <label className="block text-sm font-medium text-stone-700 mb-1">
-                  Items (2–10)
-                </label>
-                <input
-                  ref={carouselInputRef}
-                  type="file"
-                  accept="image/jpeg,image/jpg,video/mp4,video/quicktime"
-                  multiple
-                  onChange={handleCarouselFilesChange}
-                  className="block w-full text-sm text-stone-600 file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:bg-teal-50 file:text-teal-700"
-                />
-                {carouselError && (
-                  <p className="mt-1 text-sm text-red-600">{carouselError}</p>
-                )}
-                <ul className="mt-2 space-y-2">
-                  {carouselFiles.map((item, i) => (
-                    <li
-                      key={i}
-                      className="flex items-center gap-2 p-2 bg-stone-50 rounded-lg"
+            <div>
+              <label className="block text-sm font-medium text-stone-700 mb-1">
+                Items (2\u201310)
+              </label>
+              <input
+                ref={carouselInputRef}
+                type="file"
+                accept="image/jpeg,image/jpg,image/png,video/mp4,video/quicktime"
+                multiple
+                onChange={handleCarouselFilesChange}
+                className="block w-full text-sm text-stone-600 file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:bg-teal-50 file:text-teal-700"
+              />
+              {carouselError && (
+                <p className="mt-1 text-sm text-red-600">{carouselError}</p>
+              )}
+              <ul className="mt-2 space-y-2">
+                {carouselFiles.map((item, i) => (
+                  <li
+                    key={i}
+                    className="flex items-center gap-2 p-2 bg-stone-50 rounded-lg"
+                  >
+                    <button
+                      type="button"
+                      className="text-stone-400 hover:text-stone-600"
+                      onClick={() => moveCarouselItem(i, i - 1)}
+                      disabled={i === 0}
+                      aria-label="Move up"
                     >
-                      <button
-                        type="button"
-                        className="text-stone-400 hover:text-stone-600"
-                        onClick={() => moveCarouselItem(i, i - 1)}
-                        disabled={i === 0}
-                        aria-label="Move up"
-                      >
-                        <GripVertical className="h-4 w-4" />
-                      </button>
-                      <span className="flex-1 truncate text-sm text-stone-700">
-                        {item.file.name}
-                        {item.type === "video" && item.duration != null && (
-                          <span className="text-stone-500"> · {item.duration.toFixed(0)}s</span>
-                        )}
-                      </span>
-                      <button
-                        type="button"
-                        className="text-stone-400 hover:text-red-600"
-                        onClick={() => removeCarouselItem(i)}
-                        aria-label="Remove"
-                      >
-                        <X className="h-4 w-4" />
-                      </button>
-                    </li>
-                  ))}
-                </ul>
-                {carouselFiles.length > 0 && (
-                  <p className="text-xs text-stone-500 mt-1">
-                    First item sets aspect ratio. Drag to reorder.
-                  </p>
-                )}
-              </div>
-            </>
+                      <GripVertical className="h-4 w-4" />
+                    </button>
+                    <span className="flex-1 truncate text-sm text-stone-700">
+                      {item.file.name}
+                      {item.type === "video" && item.duration != null && (
+                        <span className="text-stone-500"> \u00b7 {item.duration.toFixed(0)}s</span>
+                      )}
+                    </span>
+                    <button
+                      type="button"
+                      className="text-stone-400 hover:text-red-600"
+                      onClick={() => removeCarouselItem(i)}
+                      aria-label="Remove"
+                    >
+                      <X className="h-4 w-4" />
+                    </button>
+                  </li>
+                ))}
+              </ul>
+              {carouselFiles.length > 0 && (
+                <p className="text-xs text-stone-500 mt-1">
+                  First item sets aspect ratio. Drag to reorder.
+                </p>
+              )}
+            </div>
           )}
 
           <div>
@@ -454,8 +556,13 @@ export function PublishClient() {
               onChange={(e) => setCaption(e.target.value)}
               rows={3}
               className="w-full rounded-lg border border-stone-200 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-teal-500 focus:border-transparent"
-              placeholder="Write a caption…"
+              placeholder="Write a caption\u2026"
             />
+            {ttCount > 0 && (
+              <p className="text-xs text-stone-400 mt-1">
+                TikTok title uses the first 90 characters. You can edit the caption in TikTok before posting from drafts.
+              </p>
+            )}
           </div>
 
           <div className="flex gap-3 pt-2">
@@ -468,12 +575,12 @@ export function PublishClient() {
                 {status === "uploading" || status === "processing" ? (
                   <>
                     <Loader2 className="h-4 w-4 animate-spin" />
-                    Publishing…
+                    Publishing\u2026
                   </>
                 ) : (
                   <>
                     <Upload className="h-4 w-4" />
-                    Publish Reel
+                    Publish Reel / Video
                   </>
                 )}
               </Button>
@@ -487,7 +594,7 @@ export function PublishClient() {
                 {status === "uploading" || status === "processing" ? (
                   <>
                     <Loader2 className="h-4 w-4 animate-spin" />
-                    Publishing…
+                    Publishing\u2026
                   </>
                 ) : (
                   <>

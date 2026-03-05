@@ -1,18 +1,19 @@
 import { NextRequest, NextResponse } from "next/server";
 import { put } from "@vercel/blob";
 
-const ALLOWED_IMAGE_TYPES = ["image/jpeg", "image/jpg"];
+const ALLOWED_IMAGE_TYPES = ["image/jpeg", "image/jpg", "image/png"];
 const ALLOWED_VIDEO_TYPES = ["video/mp4", "video/quicktime"]; // MOV
 const MAX_FILE_SIZE = 100 * 1024 * 1024; // 100 MB per file
 
 function getExtension(mime: string, filename?: string): string {
   if (filename) {
     const ext = filename.split(".").pop()?.toLowerCase();
-    if (ext && ["jpg", "jpeg", "png", "mp4", "mov"].includes(ext)) return ext;
+    if (ext && ["jpg", "jpeg", "png", "webp", "mp4", "mov"].includes(ext)) return ext;
   }
   if (mime === "video/quicktime") return "mov";
   if (mime === "video/mp4") return "mp4";
   if (mime === "image/jpeg" || mime === "image/jpg") return "jpg";
+  if (mime === "image/png") return "png";
   return "bin";
 }
 
@@ -64,7 +65,7 @@ async function uploadFiles(files: File[]) {
     if (!allowed) {
       return NextResponse.json(
         {
-          error: `Invalid file type: ${file.name}. Use JPEG for images or MP4/MOV for video.`,
+          error: `Invalid file type: ${file.name}. Use JPEG/PNG for images or MP4/MOV for video.`,
         },
         { status: 400 }
       );
