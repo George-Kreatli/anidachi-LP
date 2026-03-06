@@ -5,7 +5,7 @@ import {
   validateOpenClawSecret,
   unauthorizedResponse,
 } from "@/lib/openclaw-auth";
-import { createJob, updateJob } from "@/lib/openclaw-jobs";
+import { createJob, saveJob } from "@/lib/openclaw-jobs";
 import {
   ensureAllCredentials as ensureAllIg,
   createCarouselChildImage,
@@ -97,7 +97,7 @@ export async function POST(request: NextRequest) {
       ...ttCreds.map((c) => ({ platform: "tiktok" as const, accountId: c.openId, username: c.username })),
     ];
 
-    const job = createJob(caption.trim(), photos.length, allAccounts);
+    const job = await createJob(caption.trim(), photos.length, allAccounts);
 
     // Upload to Vercel Blob (shared across all platforms)
     const date = new Date().toISOString().slice(0, 10);
@@ -150,11 +150,9 @@ export async function POST(request: NextRequest) {
       (p) => `${origin}/api/media/${p}`,
     );
 
-    updateJob(job.id, {
-      overallStatus: "creating_children",
-      blobUrls,
-      proxyUrls,
-    });
+    job.overallStatus = "creating_children";
+    job.blobUrls = blobUrls;
+    job.proxyUrls = proxyUrls;
 
     // Instagram: create child containers for each account
     await Promise.all(
@@ -207,7 +205,8 @@ export async function POST(request: NextRequest) {
       }),
     );
 
-    updateJob(job.id, { overallStatus: "processing" });
+    job.overallStatus = "processing";
+    await saveJob(job);
 
     return NextResponse.json(
       {

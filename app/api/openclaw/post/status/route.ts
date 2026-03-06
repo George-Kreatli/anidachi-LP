@@ -5,11 +5,10 @@ import {
 } from "@/lib/openclaw-auth";
 import {
   getJob,
-  updateJob,
-  updateAccountProgress,
+  saveJob,
   deriveOverallStatus,
 } from "@/lib/openclaw-jobs";
-import type { AccountProgress } from "@/lib/openclaw-jobs";
+import type { CarouselJob, AccountProgress } from "@/lib/openclaw-jobs";
 import {
   getContainerStatus,
   createCarouselParent,
@@ -36,7 +35,7 @@ export async function GET(request: NextRequest) {
     );
   }
 
-  const job = getJob(jobId);
+  const job = await getJob(jobId);
   if (!job) {
     return NextResponse.json(
       { success: false, error: "Job not found", code: "JOB_NOT_FOUND" },
@@ -66,14 +65,13 @@ export async function GET(request: NextRequest) {
   if (Date.now() - job.createdAt > JOB_TIMEOUT_MS) {
     for (const acct of job.accounts) {
       if (!["complete", "failed", "sent_to_inbox"].includes(acct.status)) {
-        updateAccountProgress(job.id, acct.accountId, {
-          status: "failed",
-          error: "Job timed out after 10 minutes",
-          step: "Timed out",
-        });
+        acct.status = "failed";
+        acct.error = "Job timed out after 10 minutes";
+        acct.step = "Timed out";
       }
     }
-    updateJob(job.id, { overallStatus: "failed" });
+    job.overallStatus = "failed";
+    await saveJob(job);
     return NextResponse.json(formatResponse());
   }
 
@@ -85,38 +83,36 @@ export async function GET(request: NextRequest) {
     activeAccounts.map(async (acct) => {
       try {
         if (acct.platform === "instagram") {
-          await processInstagramAccount(job.id, acct);
+          await processInstagramAccount(job, acct);
         } else if (acct.platform === "tiktok") {
-          await processTikTokAccount(job.id, acct);
+          await processTikTokAccount(acct);
         }
       } catch (err) {
         const e = err as Error & { status?: number };
         console.error(`OpenClaw status error for @${acct.username} (${acct.platform}):`, e);
-        updateAccountProgress(job.id, acct.accountId, {
-          status: "failed",
-          error: e.status === 401 ? "Token expired" : (e.message || "Processing failed"),
-          step: "Failed",
-        });
+        acct.status = "failed";
+        acct.error = e.status === 401 ? "Token expired" : (e.message || "Processing failed");
+        acct.step = "Failed";
       }
     }),
   );
 
-  const overall = deriveOverallStatus(job);
-  updateJob(job.id, { overallStatus: overall });
+  job.overallStatus = deriveOverallStatus(job);
+  await saveJob(job);
 
   return NextResponse.json(formatResponse());
 }
 
 // ---------------------------------------------------------------------------
-// Instagram processing (same as before)
+// Instagram processing
 // ---------------------------------------------------------------------------
 
-async function processInstagramAccount(jobId: string, acct: AccountProgress) {
+async function processInstagramAccount(job: CarouselJob, acct: AccountProgress) {
   const creds = await getIgCredsById(acct.accountId) as InstagramCredentials | null;
   if (!creds) {
-    updateAccountProgress(jobId, acct.accountId, {
-      status: "failed", error: "Account disconnected", step: "Account disconnected",
-    });
+    acct.status = "failed";
+    acct.error = "Account disconnected";
+    acct.step = "Account disconnected";
     return;
   }
 
@@ -127,38 +123,26 @@ async function processInstagramAccount(jobId: string, acct: AccountProgress) {
       const { status_code, error_message } = await getContainerStatus(creds, acct.childContainerIds[i]);
 
       if (status_code === "FINISHED" || status_code === "PUBLISHED") {
-        const newReady = acct.childrenReady + 1;
-        updateAccountProgress(jobId, acct.accountId, {
-          childrenReady: newReady,
-          step: `${newReady}/${acct.childContainerIds.length} children ready`,
-        });
-        acct.childrenReady = newReady;
+        acct.childrenReady += 1;
+        acct.step = `${acct.childrenReady}/${acct.childContainerIds.length} children ready`;
 
-        if (newReady === acct.childContainerIds.length) {
-          const parentId = await createCarouselParent(creds, acct.childContainerIds, getJob(jobId)!.caption);
-          updateAccountProgress(jobId, acct.accountId, {
-            status: "creating_parent",
-            parentContainerId: parentId,
-            step: "Parent container created, waiting for processing",
-          });
+        if (acct.childrenReady === acct.childContainerIds.length) {
+          const parentId = await createCarouselParent(creds, acct.childContainerIds, job.caption);
           acct.status = "creating_parent";
           acct.parentContainerId = parentId;
+          acct.step = "Parent container created, waiting for processing";
         }
         return;
       }
 
       if (status_code === "ERROR") {
-        updateAccountProgress(jobId, acct.accountId, {
-          status: "failed",
-          error: error_message || `Child container ${i + 1} failed`,
-          step: `Child ${i + 1} failed`,
-        });
+        acct.status = "failed";
+        acct.error = error_message || `Child container ${i + 1} failed`;
+        acct.step = `Child ${i + 1} failed`;
         return;
       }
 
-      updateAccountProgress(jobId, acct.accountId, {
-        step: `${acct.childrenReady}/${acct.childContainerIds.length} children ready (waiting on ${i + 1})`,
-      });
+      acct.step = `${acct.childrenReady}/${acct.childContainerIds.length} children ready (waiting on ${i + 1})`;
       return;
     }
   }
@@ -167,24 +151,23 @@ async function processInstagramAccount(jobId: string, acct: AccountProgress) {
     const { status_code, error_message } = await getContainerStatus(creds, acct.parentContainerId);
 
     if (status_code === "FINISHED" || status_code === "PUBLISHED") {
-      updateAccountProgress(jobId, acct.accountId, { status: "publishing", step: "Publishing carousel" });
+      acct.status = "publishing";
+      acct.step = "Publishing carousel";
       const result = await publishContainer(creds, acct.parentContainerId);
-      updateAccountProgress(jobId, acct.accountId, {
-        status: "complete", mediaId: result.id, step: "Published",
-      });
+      acct.status = "complete";
+      acct.mediaId = result.id;
+      acct.step = "Published";
       return;
     }
 
     if (status_code === "ERROR") {
-      updateAccountProgress(jobId, acct.accountId, {
-        status: "failed", error: error_message || "Parent container failed", step: "Parent container failed",
-      });
+      acct.status = "failed";
+      acct.error = error_message || "Parent container failed";
+      acct.step = "Parent container failed";
       return;
     }
 
-    updateAccountProgress(jobId, acct.accountId, {
-      step: "Waiting for parent container to finish processing",
-    });
+    acct.step = "Waiting for parent container to finish processing";
   }
 }
 
@@ -192,19 +175,19 @@ async function processInstagramAccount(jobId: string, acct: AccountProgress) {
 // TikTok processing
 // ---------------------------------------------------------------------------
 
-async function processTikTokAccount(jobId: string, acct: AccountProgress) {
+async function processTikTokAccount(acct: AccountProgress) {
   if (!acct.publishId) {
-    updateAccountProgress(jobId, acct.accountId, {
-      status: "failed", error: "No publish ID", step: "Failed",
-    });
+    acct.status = "failed";
+    acct.error = "No publish ID";
+    acct.step = "Failed";
     return;
   }
 
   const rawCreds = await getTtCredsById(acct.accountId) as TikTokCredentials | null;
   if (!rawCreds) {
-    updateAccountProgress(jobId, acct.accountId, {
-      status: "failed", error: "Account disconnected", step: "Account disconnected",
-    });
+    acct.status = "failed";
+    acct.error = "Account disconnected";
+    acct.step = "Account disconnected";
     return;
   }
 
@@ -212,32 +195,23 @@ async function processTikTokAccount(jobId: string, acct: AccountProgress) {
   const { status, failReason } = await fetchPublishStatus(creds, acct.publishId);
 
   if (status === "SEND_TO_USER_INBOX") {
-    updateAccountProgress(jobId, acct.accountId, {
-      status: "sent_to_inbox",
-      step: "Sent to TikTok inbox — open TikTok to review and publish",
-    });
+    acct.status = "sent_to_inbox";
+    acct.step = "Sent to TikTok inbox — open TikTok to review and publish";
     return;
   }
 
   if (status === "PUBLISH_COMPLETE") {
-    updateAccountProgress(jobId, acct.accountId, {
-      status: "complete",
-      step: "Published on TikTok",
-    });
+    acct.status = "complete";
+    acct.step = "Published on TikTok";
     return;
   }
 
   if (status === "FAILED") {
-    updateAccountProgress(jobId, acct.accountId, {
-      status: "failed",
-      error: failReason || "TikTok upload failed",
-      step: "TikTok upload failed",
-    });
+    acct.status = "failed";
+    acct.error = failReason || "TikTok upload failed";
+    acct.step = "TikTok upload failed";
     return;
   }
 
-  // Still processing
-  updateAccountProgress(jobId, acct.accountId, {
-    step: `TikTok processing (${status.toLowerCase().replace(/_/g, " ")})`,
-  });
+  acct.step = `TikTok processing (${status.toLowerCase().replace(/_/g, " ")})`;
 }

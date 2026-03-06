@@ -1,3 +1,14 @@
+import { readFile, writeFile, mkdir } from "fs/promises";
+import { join } from "path";
+import {
+  get as blobGet,
+  put as blobPut,
+} from "@vercel/blob";
+
+// ---------------------------------------------------------------------------
+// Types
+// ---------------------------------------------------------------------------
+
 export interface AccountProgress {
   platform: "instagram" | "tiktok";
   accountId: string;   // igUserId or openId
@@ -36,23 +47,83 @@ export interface CarouselJob {
   updatedAt: number;
 }
 
-const jobs = new Map<string, CarouselJob>();
+// ---------------------------------------------------------------------------
+// Config
+// ---------------------------------------------------------------------------
 
 const JOB_TTL_MS = 30 * 60 * 1000;
+const BLOB_PREFIX = "openclaw/jobs";
+const LOCAL_DIR = ".data/openclaw-jobs";
+const BLOB_ACCESS = (process.env.BLOB_ACCESS ?? "private") as "public" | "private";
 
-function cleanup() {
-  const cutoff = Date.now() - JOB_TTL_MS;
-  for (const [id, job] of jobs) {
-    if (job.createdAt < cutoff) jobs.delete(id);
+function blobPath(jobId: string): string {
+  return `${BLOB_PREFIX}/${jobId}.json`;
+}
+
+function localPath(jobId: string): string {
+  return join(process.cwd(), LOCAL_DIR, `${jobId}.json`);
+}
+
+// ---------------------------------------------------------------------------
+// Blob helpers
+// ---------------------------------------------------------------------------
+
+async function readFromBlob(jobId: string): Promise<CarouselJob | undefined> {
+  const token = process.env.BLOB_READ_WRITE_TOKEN;
+  if (!token) return undefined;
+
+  try {
+    const result = await blobGet(blobPath(jobId), { access: BLOB_ACCESS, token });
+    if (!result || result.statusCode !== 200) return undefined;
+    const text = await new Response(result.stream).text();
+    return JSON.parse(text) as CarouselJob;
+  } catch {
+    return undefined;
   }
 }
 
-export function createJob(
+async function writeToBlob(job: CarouselJob): Promise<void> {
+  const token = process.env.BLOB_READ_WRITE_TOKEN;
+  if (!token) return;
+
+  await blobPut(blobPath(job.id), JSON.stringify(job), {
+    access: BLOB_ACCESS,
+    token,
+    addRandomSuffix: false,
+    allowOverwrite: true,
+    contentType: "application/json",
+  });
+}
+
+// ---------------------------------------------------------------------------
+// Local filesystem helpers (dev fallback)
+// ---------------------------------------------------------------------------
+
+async function readFromFile(jobId: string): Promise<CarouselJob | undefined> {
+  try {
+    const data = await readFile(localPath(jobId), "utf-8");
+    return JSON.parse(data) as CarouselJob;
+  } catch {
+    return undefined;
+  }
+}
+
+async function writeToFile(job: CarouselJob): Promise<void> {
+  const dir = join(process.cwd(), LOCAL_DIR);
+  await mkdir(dir, { recursive: true });
+  await writeFile(localPath(job.id), JSON.stringify(job, null, 2), "utf-8");
+}
+
+// ---------------------------------------------------------------------------
+// Public API
+// ---------------------------------------------------------------------------
+
+/** Create a new job, persist it, and return the job object. */
+export async function createJob(
   caption: string,
   totalChildren: number,
   accounts: { platform: "instagram" | "tiktok"; accountId: string; username: string }[],
-): CarouselJob {
-  cleanup();
+): Promise<CarouselJob> {
   const id = crypto.randomUUID();
   const job: CarouselJob = {
     id,
@@ -73,32 +144,28 @@ export function createJob(
     createdAt: Date.now(),
     updatedAt: Date.now(),
   };
-  jobs.set(id, job);
+
+  await saveJob(job);
   return job;
 }
 
-export function getJob(id: string): CarouselJob | undefined {
-  return jobs.get(id);
+/** Load a job by ID. Returns undefined if not found or expired. */
+export async function getJob(id: string): Promise<CarouselJob | undefined> {
+  const useBlob = !!process.env.BLOB_READ_WRITE_TOKEN;
+  const job = useBlob ? await readFromBlob(id) : await readFromFile(id);
+  if (!job) return undefined;
+
+  if (Date.now() - job.createdAt > JOB_TTL_MS) return undefined;
+  return job;
 }
 
-export function updateJob(id: string, updates: Partial<CarouselJob>) {
-  const job = jobs.get(id);
-  if (job) {
-    Object.assign(job, updates, { updatedAt: Date.now() });
-  }
-}
-
-export function updateAccountProgress(
-  jobId: string,
-  accountId: string,
-  updates: Partial<AccountProgress>,
-) {
-  const job = jobs.get(jobId);
-  if (!job) return;
-  const account = job.accounts.find((a) => a.accountId === accountId);
-  if (account) {
-    Object.assign(account, updates);
-    job.updatedAt = Date.now();
+/** Persist the full job object (call once at end of request). */
+export async function saveJob(job: CarouselJob): Promise<void> {
+  job.updatedAt = Date.now();
+  if (process.env.BLOB_READ_WRITE_TOKEN) {
+    await writeToBlob(job);
+  } else {
+    await writeToFile(job);
   }
 }
 
