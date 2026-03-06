@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
+import sharp from "sharp";
 import { put } from "@vercel/blob";
 import {
   validateOpenClawSecret,
@@ -118,7 +119,33 @@ export async function POST(request: NextRequest) {
     const origin = request.headers.get("x-forwarded-host")
       ? `${request.headers.get("x-forwarded-proto") || "https"}://${request.headers.get("x-forwarded-host")}`
       : request.nextUrl.origin;
-    const proxyUrls = blobPaths.map((p) => `${origin}/api/media/${p}`);
+
+    // TikTok only accepts JPEG/WebP — convert any PNGs to JPEG
+    const ttBlobPaths: string[] = [];
+    if (ttCreds.length > 0) {
+      for (let i = 0; i < blobUrls.length; i++) {
+        if (/\.png$/i.test(blobPaths[i])) {
+          const res = await fetch(blobUrls[i]);
+          const buffer = Buffer.from(await res.arrayBuffer());
+          const jpegBuffer = await sharp(buffer)
+            .flatten({ background: { r: 255, g: 255, b: 255 } })
+            .jpeg({ quality: 92 })
+            .toBuffer();
+          const jpegPath = `openclaw/tiktok-jpg/${date}/${crypto.randomUUID()}.jpg`;
+          await put(jpegPath, jpegBuffer, {
+            access: "public",
+            addRandomSuffix: false,
+            contentType: "image/jpeg",
+          });
+          ttBlobPaths.push(jpegPath);
+        } else {
+          ttBlobPaths.push(blobPaths[i]);
+        }
+      }
+    }
+    const proxyUrls = (ttCreds.length > 0 ? ttBlobPaths : blobPaths).map(
+      (p) => `${origin}/api/media/${p}`,
+    );
 
     updateJob(job.id, {
       overallStatus: "creating_children",

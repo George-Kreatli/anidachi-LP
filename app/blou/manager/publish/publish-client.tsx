@@ -209,7 +209,7 @@ export function PublishClient() {
   const publishReel = async () => {
     if (!reelFile) return;
     setStatus("uploading");
-    setStatusMessage("Uploading video\u2026");
+    setStatusMessage("Uploading video…");
     setReelError(null);
     setAccountResults([]);
     try {
@@ -227,7 +227,7 @@ export function PublishClient() {
       }
       const videoUrl = uploadData.url;
       setStatus("processing");
-      setStatusMessage("Publishing to all accounts\u2026");
+      setStatusMessage("Publishing to all accounts…");
       const publishRes = await fetch("/api/blou/publish/reel", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -261,7 +261,7 @@ export function PublishClient() {
       return;
     }
     setStatus("uploading");
-    setStatusMessage("Uploading files\u2026");
+    setStatusMessage("Uploading files…");
     setCarouselError(null);
     setAccountResults([]);
     try {
@@ -282,7 +282,7 @@ export function PublishClient() {
         urls.push({ url: uploadData.url, type: item.type });
       }
       setStatus("processing");
-      setStatusMessage("Publishing to all accounts\u2026");
+      setStatusMessage("Publishing to all accounts…");
       const publishRes = await fetch("/api/blou/publish/carousel", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -327,7 +327,7 @@ export function PublishClient() {
       <Card className="border-teal-100 bg-white shadow-sm">
         <CardContent className="pt-6 flex items-center gap-2 text-stone-600">
           <Loader2 className="h-4 w-4 animate-spin text-teal-600" />
-          <span>Checking connections\u2026</span>
+          <span>Checking connections…</span>
         </CardContent>
       </Card>
     );
@@ -401,7 +401,7 @@ export function PublishClient() {
           <CardDescription>
             {tab === "reel"
               ? "Upload a video (MP4/MOV, max 90 sec). Posts as Instagram Reel and TikTok video (draft)."
-              : `Upload 2\u201310 images or videos. Posts as Instagram Carousel and TikTok photo post (draft).`}
+              : `Upload 2–10 images or videos. Posts as Instagram Carousel and TikTok photo post (draft).`}
           </CardDescription>
         </CardHeader>
         <CardContent className="space-y-4">
@@ -482,7 +482,7 @@ export function PublishClient() {
               {reelFile && (
                 <p className="mt-1 text-sm text-stone-500">
                   {reelFile.name}
-                  {reelDuration != null && ` \u00b7 ${reelDuration.toFixed(1)}s`}
+                  {reelDuration != null && ` · ${reelDuration.toFixed(1)}s`}
                 </p>
               )}
               {reelError && (
@@ -494,7 +494,7 @@ export function PublishClient() {
           {tab === "carousel" && (
             <div>
               <label className="block text-sm font-medium text-stone-700 mb-1">
-                Items (2\u201310)
+                Items (2–10)
               </label>
               <input
                 ref={carouselInputRef}
@@ -525,7 +525,7 @@ export function PublishClient() {
                     <span className="flex-1 truncate text-sm text-stone-700">
                       {item.file.name}
                       {item.type === "video" && item.duration != null && (
-                        <span className="text-stone-500"> \u00b7 {item.duration.toFixed(0)}s</span>
+                        <span className="text-stone-500"> · {item.duration.toFixed(0)}s</span>
                       )}
                     </span>
                     <button
@@ -556,7 +556,7 @@ export function PublishClient() {
               onChange={(e) => setCaption(e.target.value)}
               rows={3}
               className="w-full rounded-lg border border-stone-200 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-teal-500 focus:border-transparent"
-              placeholder="Write a caption\u2026"
+              placeholder="Write a caption…"
             />
             {ttCount > 0 && (
               <p className="text-xs text-stone-400 mt-1">
@@ -575,7 +575,7 @@ export function PublishClient() {
                 {status === "uploading" || status === "processing" ? (
                   <>
                     <Loader2 className="h-4 w-4 animate-spin" />
-                    Publishing\u2026
+                    Publishing…
                   </>
                 ) : (
                   <>
@@ -594,7 +594,7 @@ export function PublishClient() {
                 {status === "uploading" || status === "processing" ? (
                   <>
                     <Loader2 className="h-4 w-4 animate-spin" />
-                    Publishing\u2026
+                    Publishing…
                   </>
                 ) : (
                   <>

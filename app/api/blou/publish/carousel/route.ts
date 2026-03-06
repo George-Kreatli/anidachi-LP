@@ -1,4 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
+import sharp from "sharp";
+import { put } from "@vercel/blob";
 import {
   ensureAllCredentials as ensureAllIg,
   createCarouselChildImage,
@@ -20,6 +22,32 @@ const MIN_ITEMS = 2;
 const MAX_ITEMS = 10;
 const TT_POLL_INTERVAL_MS = 3000;
 const TT_POLL_TIMEOUT_MS = 2 * 60 * 1000;
+
+async function ensureJpegForTikTok(blobUrls: string[]): Promise<string[]> {
+  const result: string[] = [];
+  for (const url of blobUrls) {
+    const isPng = /\.png$/i.test(new URL(url).pathname);
+    if (!isPng) {
+      result.push(url);
+      continue;
+    }
+    const res = await fetch(url);
+    const buffer = Buffer.from(await res.arrayBuffer());
+    const jpegBuffer = await sharp(buffer)
+      .flatten({ background: { r: 255, g: 255, b: 255 } })
+      .jpeg({ quality: 92 })
+      .toBuffer();
+    const date = new Date().toISOString().slice(0, 10);
+    const pathname = `blou/tiktok-jpg/${date}/${crypto.randomUUID()}.jpg`;
+    const blob = await put(pathname, jpegBuffer, {
+      access: "public",
+      addRandomSuffix: false,
+      contentType: "image/jpeg",
+    });
+    result.push(blob.url);
+  }
+  return result;
+}
 
 interface AccountResult {
   platform: "instagram" | "tiktok";
@@ -194,7 +222,12 @@ export async function POST(request: NextRequest) {
     : request.nextUrl.origin;
 
   const imageOnlyUrls = mediaUrls.filter((m) => m.type === "image").map((m) => m.url);
-  const proxyUrls = imageOnlyUrls.map((url) => blobUrlToProxyUrl(url, origin));
+
+  // TikTok only accepts JPEG/WebP — convert any PNGs to JPEG
+  const ttImageUrls = ttCreds.length > 0
+    ? await ensureJpegForTikTok(imageOnlyUrls)
+    : imageOnlyUrls;
+  const proxyUrls = ttImageUrls.map((url) => blobUrlToProxyUrl(url, origin));
 
   const allResults = await Promise.all([
     ...igCreds.map((creds) => publishToIgAccount(creds, mediaUrls, caption ?? "")),
