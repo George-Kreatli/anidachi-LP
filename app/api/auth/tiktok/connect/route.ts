@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 
 export const dynamic = "force-dynamic";
 
-const TIKTOK_SCOPES = "user.info.basic,user.info.profile,video.upload";
+const TIKTOK_SCOPES = "user.info.basic,user.info.profile,video.upload,video.publish";
 
 export async function GET(request: NextRequest) {
   const clientKey = process.env.TIKTOK_CLIENT_KEY || "";

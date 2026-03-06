@@ -119,13 +119,14 @@ export async function initInboxPhotoPost(
   creds: TikTokCredentials,
   imageUrls: string[],
   title: string,
+  description?: string,
 ): Promise<string> {
   const fresh = await refreshIfNeeded(creds);
 
   const body = {
     post_info: {
       title: title.slice(0, 90),
-      description: title.slice(0, 4000),
+      description: (description ?? title).slice(0, 4000),
     },
     source_info: {
       source: "PULL_FROM_URL",

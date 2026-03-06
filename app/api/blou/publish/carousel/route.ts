@@ -17,28 +17,30 @@ import {
   fetchPublishStatus,
 } from "@/lib/tiktok/api";
 import type { TikTokCredentials } from "@/lib/tiktok/api";
+import { adaptCaptionForTikTok } from "@/lib/tiktok/caption";
 
 const MIN_ITEMS = 2;
 const MAX_ITEMS = 10;
 const TT_POLL_INTERVAL_MS = 3000;
 const TT_POLL_TIMEOUT_MS = 2 * 60 * 1000;
 
-async function ensureJpegForTikTok(blobUrls: string[]): Promise<string[]> {
+async function prepareTikTokImages(blobUrls: string[]): Promise<string[]> {
   const result: string[] = [];
   for (const url of blobUrls) {
-    const isPng = /\.png$/i.test(new URL(url).pathname);
-    if (!isPng) {
-      result.push(url);
-      continue;
-    }
     const res = await fetch(url);
     const buffer = Buffer.from(await res.arrayBuffer());
+    const metadata = await sharp(buffer).metadata();
+    const targetWidth = metadata.width || 1080;
+    const targetHeight = Math.round(targetWidth * (16 / 9));
     const jpegBuffer = await sharp(buffer)
-      .flatten({ background: { r: 255, g: 255, b: 255 } })
+      .resize(targetWidth, targetHeight, {
+        fit: "contain",
+        background: { r: 18, g: 28, b: 26, alpha: 1 },
+      })
       .jpeg({ quality: 92 })
       .toBuffer();
     const date = new Date().toISOString().slice(0, 10);
-    const pathname = `blou/tiktok-jpg/${date}/${crypto.randomUUID()}.jpg`;
+    const pathname = `blou/tiktok-916/${date}/${crypto.randomUUID()}.jpg`;
     const blob = await put(pathname, jpegBuffer, {
       access: "public",
       addRandomSuffix: false,
@@ -110,7 +112,8 @@ async function publishToTtAccount(
 ): Promise<AccountResult> {
   try {
     const fresh = await refreshIfNeeded(creds);
-    const publishId = await initInboxPhotoPost(fresh, proxyUrls, caption);
+    const { title, description } = adaptCaptionForTikTok(caption);
+    const publishId = await initInboxPhotoPost(fresh, proxyUrls, title, description);
 
     const start = Date.now();
     while (Date.now() - start < TT_POLL_TIMEOUT_MS) {
@@ -225,7 +228,7 @@ export async function POST(request: NextRequest) {
 
   // TikTok only accepts JPEG/WebP — convert any PNGs to JPEG
   const ttImageUrls = ttCreds.length > 0
-    ? await ensureJpegForTikTok(imageOnlyUrls)
+    ? await prepareTikTokImages(imageOnlyUrls)
     : imageOnlyUrls;
   const proxyUrls = ttImageUrls.map((url) => blobUrlToProxyUrl(url, origin));
 

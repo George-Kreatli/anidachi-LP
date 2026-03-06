@@ -18,6 +18,7 @@ import {
 import type { TikTokCredentials } from "@/lib/tiktok/api";
 import { getAllCredentials as getAllIgCredentials } from "@/lib/instagram/storage";
 import { getAllCredentials as getAllTtCredentials } from "@/lib/tiktok/storage";
+import { adaptCaptionForTikTok } from "@/lib/tiktok/caption";
 
 const MIN_PHOTOS = 2;
 const MAX_PHOTOS = 10;
@@ -120,27 +121,29 @@ export async function POST(request: NextRequest) {
       ? `${request.headers.get("x-forwarded-proto") || "https"}://${request.headers.get("x-forwarded-host")}`
       : request.nextUrl.origin;
 
-    // TikTok only accepts JPEG/WebP — convert any PNGs to JPEG
+    // TikTok: pad images to 9:16 (1080x1920) with dark background and convert to JPEG
     const ttBlobPaths: string[] = [];
     if (ttCreds.length > 0) {
       for (let i = 0; i < blobUrls.length; i++) {
-        if (/\.png$/i.test(blobPaths[i])) {
-          const res = await fetch(blobUrls[i]);
-          const buffer = Buffer.from(await res.arrayBuffer());
-          const jpegBuffer = await sharp(buffer)
-            .flatten({ background: { r: 255, g: 255, b: 255 } })
-            .jpeg({ quality: 92 })
-            .toBuffer();
-          const jpegPath = `openclaw/tiktok-jpg/${date}/${crypto.randomUUID()}.jpg`;
-          await put(jpegPath, jpegBuffer, {
-            access: "public",
-            addRandomSuffix: false,
-            contentType: "image/jpeg",
-          });
-          ttBlobPaths.push(jpegPath);
-        } else {
-          ttBlobPaths.push(blobPaths[i]);
-        }
+        const res = await fetch(blobUrls[i]);
+        const buffer = Buffer.from(await res.arrayBuffer());
+        const metadata = await sharp(buffer).metadata();
+        const targetWidth = metadata.width || 1080;
+        const targetHeight = Math.round(targetWidth * (16 / 9));
+        const jpegBuffer = await sharp(buffer)
+          .resize(targetWidth, targetHeight, {
+            fit: "contain",
+            background: { r: 18, g: 28, b: 26, alpha: 1 },
+          })
+          .jpeg({ quality: 92 })
+          .toBuffer();
+        const jpegPath = `openclaw/tiktok-916/${date}/${crypto.randomUUID()}.jpg`;
+        await put(jpegPath, jpegBuffer, {
+          access: "public",
+          addRandomSuffix: false,
+          contentType: "image/jpeg",
+        });
+        ttBlobPaths.push(jpegPath);
       }
     }
     const proxyUrls = (ttCreds.length > 0 ? ttBlobPaths : blobPaths).map(
@@ -184,7 +187,8 @@ export async function POST(request: NextRequest) {
     await Promise.all(
       ttCreds.map(async (creds) => {
         try {
-          const publishId = await initInboxPhotoPost(creds, proxyUrls, caption.trim());
+          const { title, description } = adaptCaptionForTikTok(caption.trim());
+          const publishId = await initInboxPhotoPost(creds, proxyUrls, title, description);
           const acct = job.accounts.find(
             (a) => a.platform === "tiktok" && a.accountId === creds.openId,
           )!;

@@ -5,6 +5,7 @@ import {
 } from "@/lib/openclaw-auth";
 import { getAllCredentials as getAllIg } from "@/lib/instagram/storage";
 import { getAllCredentials as getAllTt } from "@/lib/tiktok/storage";
+import { refreshIfNeeded } from "@/lib/tiktok/api";
 
 const IG_GRAPH_BASE = "https://graph.instagram.com/v21.0";
 const TT_API_BASE = "https://open.tiktokapis.com";
@@ -53,9 +54,10 @@ export async function GET(request: NextRequest) {
   const ttResults = await Promise.all(
     ttAccounts.map(async (creds) => {
       try {
+        const fresh = await refreshIfNeeded(creds);
         const res = await fetch(
           `${TT_API_BASE}/v2/user/info/?fields=open_id,display_name`,
-          { headers: { Authorization: `Bearer ${creds.accessToken}` } },
+          { headers: { Authorization: `Bearer ${fresh.accessToken}` } },
         );
         const data = (await res.json()) as { error?: { code?: string } };
         const ok = !data.error?.code || data.error.code === "ok";
@@ -70,7 +72,7 @@ export async function GET(request: NextRequest) {
           accountId: creds.openId,
           username: creds.username,
           healthy: false,
-          reason: "request_failed",
+          reason: "token_expired",
         };
       }
     }),
