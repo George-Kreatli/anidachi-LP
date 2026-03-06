@@ -125,14 +125,7 @@ async function processInstagramAccount(job: CarouselJob, acct: AccountProgress) 
       if (status_code === "FINISHED" || status_code === "PUBLISHED") {
         acct.childrenReady += 1;
         acct.step = `${acct.childrenReady}/${acct.childContainerIds.length} children ready`;
-
-        if (acct.childrenReady === acct.childContainerIds.length) {
-          const parentId = await createCarouselParent(creds, acct.childContainerIds, job.caption);
-          acct.status = "creating_parent";
-          acct.parentContainerId = parentId;
-          acct.step = "Parent container created, waiting for processing";
-        }
-        return;
+        continue;
       }
 
       if (status_code === "ERROR") {
@@ -144,6 +137,13 @@ async function processInstagramAccount(job: CarouselJob, acct: AccountProgress) 
 
       acct.step = `${acct.childrenReady}/${acct.childContainerIds.length} children ready (waiting on ${i + 1})`;
       return;
+    }
+
+    if (acct.childrenReady === acct.childContainerIds.length) {
+      const parentId = await createCarouselParent(creds, acct.childContainerIds, job.caption);
+      acct.status = "creating_parent";
+      acct.parentContainerId = parentId;
+      acct.step = "Parent container created, waiting for processing";
     }
   }
 

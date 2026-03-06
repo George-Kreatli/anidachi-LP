@@ -92,6 +92,7 @@ async function writeToBlob(job: CarouselJob): Promise<void> {
     addRandomSuffix: false,
     allowOverwrite: true,
     contentType: "application/json",
+    cacheControlMaxAge: 0,
   });
 }
 
