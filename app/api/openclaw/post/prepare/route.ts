@@ -91,6 +91,64 @@ export async function POST(request: NextRequest) {
     }
   }
 
+  // Optional platform filtering (platform / platforms[])
+  type Platform = "instagram" | "tiktok";
+  const requestedPlatforms = new Set<Platform>();
+  const hasPlatformField =
+    formData.has("platform") || formData.has("platforms[]");
+
+  const addPlatformValue = (value: FormDataEntryValue) => {
+    if (typeof value !== "string") return;
+    const v = value.trim().toLowerCase();
+    if (!v) return;
+    if (v === "instagram" || v === "ig") {
+      requestedPlatforms.add("instagram");
+    } else if (v === "tiktok" || v === "tt") {
+      requestedPlatforms.add("tiktok");
+    }
+  };
+
+  const singlePlatform = formData.get("platform");
+  if (singlePlatform !== null) {
+    addPlatformValue(singlePlatform);
+  }
+
+  const multiPlatforms = formData.getAll("platforms[]");
+  for (const value of multiPlatforms) {
+    addPlatformValue(value);
+  }
+
+  if (hasPlatformField && requestedPlatforms.size === 0) {
+    return NextResponse.json(
+      {
+        success: false,
+        error: "Invalid platform value. Use 'instagram' or 'tiktok'.",
+        code: "INVALID_INPUT",
+      },
+      { status: 400 },
+    );
+  }
+
+  if (requestedPlatforms.size > 0) {
+    if (!requestedPlatforms.has("instagram")) {
+      igCreds = [];
+    }
+    if (!requestedPlatforms.has("tiktok")) {
+      ttCreds = [];
+    }
+  }
+
+  if (requestedPlatforms.size > 0 && igCreds.length === 0 && ttCreds.length === 0) {
+    return NextResponse.json(
+      {
+        success: false,
+        error: "No accounts connected for requested platform(s)",
+        code: "RECONNECT",
+      },
+      { status: 401 },
+    );
+  }
+
   try {
     const allAccounts = [
       ...igCreds.map((c) => ({ platform: "instagram" as const, accountId: c.igUserId, username: c.igUsername })),
