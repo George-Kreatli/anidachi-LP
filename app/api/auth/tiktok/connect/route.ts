@@ -2,7 +2,8 @@ import { NextRequest, NextResponse } from "next/server";
 
 export const dynamic = "force-dynamic";
 
-const TIKTOK_SCOPES = "user.info.basic,user.info.profile,video.upload,video.publish";
+// Only request scopes enabled in your TikTok app sandbox (video.publish causes invalid_scope if not granted)
+const TIKTOK_SCOPES = "user.info.basic,user.info.profile,video.upload";
 
 export async function GET(request: NextRequest) {
   const clientKey = process.env.TIKTOK_CLIENT_KEY || "";
