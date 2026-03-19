@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
-import { setCredentials } from "@/lib/instagram/storage";
+import { getAllCredentials, setCredentials } from "@/lib/instagram/storage";
+import { MAX_INSTAGRAM_ACCOUNTS } from "@/lib/social-account-limits";
 
 export const dynamic = "force-dynamic";
 
@@ -192,6 +193,19 @@ export async function GET(request: NextRequest) {
     if (!igUserId) {
       const redirect = NextResponse.redirect(
         new URL("/blou/manager?error=no_instagram_account", origin)
+      );
+      clearStateCookie(redirect, isSecure);
+      return redirect;
+    }
+
+    const existingIg = await getAllCredentials();
+    const isExistingAccount = existingIg.some((c) => c.igUserId === igUserId);
+    if (
+      !isExistingAccount &&
+      existingIg.length >= MAX_INSTAGRAM_ACCOUNTS
+    ) {
+      const redirect = NextResponse.redirect(
+        new URL("/blou/manager?error=max_instagram_accounts", origin)
       );
       clearStateCookie(redirect, isSecure);
       return redirect;

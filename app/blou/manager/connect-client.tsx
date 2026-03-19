@@ -12,6 +12,10 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { Instagram, Loader2, Music2 } from "lucide-react";
+import {
+  MAX_INSTAGRAM_ACCOUNTS,
+  MAX_TIKTOK_ACCOUNTS,
+} from "@/lib/social-account-limits";
 
 interface IgAccount {
   igUserId: string;
@@ -36,8 +40,8 @@ interface TtStatus {
   accounts: TtAccount[];
 }
 
-const MAX_IG_ACCOUNTS = 2;
-const MAX_TT_ACCOUNTS = 2;
+const MAX_IG_ACCOUNTS = MAX_INSTAGRAM_ACCOUNTS;
+const MAX_TT_ACCOUNTS = MAX_TIKTOK_ACCOUNTS;
 
 const ERROR_MESSAGES: Record<string, string> = {
   no_pages: "No Facebook Page found. Link a Page to your account.",
@@ -47,6 +51,8 @@ const ERROR_MESSAGES: Record<string, string> = {
   missing_code: "OAuth callback missing code.",
   missing_or_invalid_state: "OAuth session expired or was tampered with. Please try again.",
   tiktok_invalid_state: "TikTok OAuth session expired. Please try again.",
+  max_instagram_accounts: `Maximum of ${MAX_IG_ACCOUNTS} Instagram accounts can be connected. Disconnect one to add another.`,
+  max_tiktok_accounts: `Maximum of ${MAX_TT_ACCOUNTS} TikTok accounts can be connected. Disconnect one to add another.`,
   server_error: "Server error. Try again.",
 };
 

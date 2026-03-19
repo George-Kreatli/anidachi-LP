@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
-import { setCredentials } from "@/lib/tiktok/storage";
+import { getAllCredentials, setCredentials } from "@/lib/tiktok/storage";
+import { MAX_TIKTOK_ACCOUNTS } from "@/lib/social-account-limits";
 
 export const dynamic = "force-dynamic";
 
@@ -115,6 +116,21 @@ export async function GET(request: NextRequest) {
       userData.data?.user?.display_name ||
       tokenData.open_id;
     const avatarUrl = userData.data?.user?.avatar_url;
+
+    const existingTt = await getAllCredentials();
+    const isExistingAccount = existingTt.some(
+      (c) => c.openId === tokenData.open_id,
+    );
+    if (
+      !isExistingAccount &&
+      existingTt.length >= MAX_TIKTOK_ACCOUNTS
+    ) {
+      const redirect = NextResponse.redirect(
+        new URL("/blou/manager?error=max_tiktok_accounts", origin),
+      );
+      clearCookies(redirect, isSecure);
+      return redirect;
+    }
 
     await setCredentials({
       accessToken: tokenData.access_token,
