@@ -13,14 +13,16 @@ export interface AccountProgress {
   platform: "instagram" | "tiktok";
   accountId: string;   // igUserId or openId
   username: string;
-  childContainerIds: string[];  // Instagram only
-  childrenReady: number;        // Instagram only
-  parentContainerId?: string;   // Instagram only
+  childContainerIds: string[];  // Instagram carousel only
+  childrenReady: number;        // Instagram carousel only
+  parentContainerId?: string;   // Instagram carousel only
+  reelContainerId?: string;     // Instagram video (Reel) only
   publishId?: string;           // TikTok only
   mediaId?: string;
   status:
     | "polling_children"
     | "creating_parent"
+    | "polling_reel"
     | "publishing"
     | "sent_to_inbox"
     | "complete"
@@ -31,6 +33,7 @@ export interface AccountProgress {
 
 export interface CarouselJob {
   id: string;
+  type?: "carousel" | "video";
   overallStatus:
     | "preparing"
     | "uploading"
@@ -41,6 +44,8 @@ export interface CarouselJob {
   caption: string;
   blobUrls: string[];
   proxyUrls: string[];  // Domain-verified URLs for TikTok
+  videoUrl?: string;       // Blob URL for video (video jobs only)
+  videoProxyUrl?: string;  // Domain-verified video URL for TikTok (video jobs only)
   totalChildren: number;
   accounts: AccountProgress[];
   createdAt: number;
@@ -124,10 +129,16 @@ export async function createJob(
   caption: string,
   totalChildren: number,
   accounts: { platform: "instagram" | "tiktok"; accountId: string; username: string }[],
+  type: "carousel" | "video" = "carousel",
 ): Promise<CarouselJob> {
   const id = crypto.randomUUID();
+
+  const igInitialStatus: AccountProgress["status"] =
+    type === "video" ? "polling_reel" : "polling_children";
+
   const job: CarouselJob = {
     id,
+    type,
     overallStatus: "preparing",
     caption,
     blobUrls: [],
@@ -139,7 +150,7 @@ export async function createJob(
       username: a.username,
       childContainerIds: [],
       childrenReady: 0,
-      status: a.platform === "instagram" ? "polling_children" : "publishing",
+      status: a.platform === "instagram" ? igInitialStatus : "publishing",
       step: "Waiting",
     })),
     createdAt: Date.now(),
