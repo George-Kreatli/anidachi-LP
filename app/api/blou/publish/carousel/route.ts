@@ -18,6 +18,12 @@ import {
 } from "@/lib/tiktok/api";
 import type { TikTokCredentials } from "@/lib/tiktok/api";
 import { adaptCaptionForTikTok } from "@/lib/tiktok/caption";
+import {
+  parseAccountFilterFromJson,
+  filterIgCredentials,
+  filterTtCredentials,
+  validateFilteredIds,
+} from "@/lib/account-selection";
 
 const MIN_ITEMS = 2;
 const MAX_ITEMS = 10;
@@ -193,7 +199,12 @@ export async function POST(request: NextRequest) {
     );
   }
 
-  let body: { mediaUrls: { url: string; type: "image" | "video" }[]; caption: string };
+  let body: {
+    mediaUrls: { url: string; type: "image" | "video" }[];
+    caption: string;
+    instagramAccountIds?: string[];
+    tiktokAccountIds?: string[];
+  };
   try {
     body = await request.json();
   } catch {
@@ -204,6 +215,37 @@ export async function POST(request: NextRequest) {
   }
 
   const { mediaUrls, caption } = body;
+
+  const accountFilter = parseAccountFilterFromJson(body);
+  if (accountFilter.hasAccountFilter) {
+    const filteredIg = filterIgCredentials(igCreds, accountFilter.instagramAccountIds);
+    const filteredTt = filterTtCredentials(ttCreds, accountFilter.tiktokAccountIds);
+
+    const unknownIg = validateFilteredIds(
+      accountFilter.instagramAccountIds,
+      filteredIg.map((c) => c.igUserId),
+    );
+    const unknownTt = validateFilteredIds(
+      accountFilter.tiktokAccountIds,
+      filteredTt.map((c) => c.openId),
+    );
+    if (unknownIg.length > 0 || unknownTt.length > 0) {
+      return NextResponse.json(
+        { error: `Unknown account IDs: ${[...unknownIg, ...unknownTt].join(", ")}`, code: "INVALID_INPUT" },
+        { status: 400 },
+      );
+    }
+
+    if (filteredIg.length === 0 && filteredTt.length === 0) {
+      return NextResponse.json(
+        { error: "No accounts selected", code: "INVALID_INPUT" },
+        { status: 400 },
+      );
+    }
+
+    igCreds = filteredIg;
+    ttCreds = filteredTt;
+  }
   if (!Array.isArray(mediaUrls) || mediaUrls.length < MIN_ITEMS || mediaUrls.length > MAX_ITEMS) {
     return NextResponse.json(
       { error: `Between ${MIN_ITEMS} and ${MAX_ITEMS} items required` },

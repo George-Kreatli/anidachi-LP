@@ -1,3 +1,40 @@
+/**
+ * POST /api/openclaw/post/prepare
+ *
+ * Accepts multipart/form-data with:
+ *   - caption            (required)  Post caption text
+ *   - photos[]           (required)  2-10 PNG/JPEG images
+ *   - platform           (optional)  "instagram" | "tiktok" — restrict to one platform
+ *   - platforms[]         (optional)  Repeat for multiple platforms
+ *   - instagramAccountIds[]  (optional)  Restrict to specific IG accounts (igUserId values)
+ *   - tiktokAccountIds[]     (optional)  Restrict to specific TT accounts (openId values)
+ *   Also accepts plain instagramAccountIds / tiktokAccountIds (no brackets), including repeated
+ *   fields — some clients omit "[]" and the server must accept both.
+ *
+ * Account IDs are available from GET /api/openclaw/health (accountId field).
+ *
+ * Examples:
+ *   # Post to one Instagram account only
+ *   curl -X POST "$BASE/api/openclaw/post/prepare" \
+ *     -H "x-openclaw-secret: $SECRET" \
+ *     -F "platform=instagram" \
+ *     -F "instagramAccountIds[]=17841400123456789" \
+ *     -F "caption=Hello" \
+ *     -F "photos[]=@slide1.jpg" -F "photos[]=@slide2.jpg"
+ *
+ *   # Post to all TikTok accounts
+ *   curl -X POST "$BASE/api/openclaw/post/prepare" \
+ *     -H "x-openclaw-secret: $SECRET" \
+ *     -F "platform=tiktok" \
+ *     -F "caption=Hello" \
+ *     -F "photos[]=@slide1.jpg" -F "photos[]=@slide2.jpg"
+ *
+ *   # Post to all connected accounts (default)
+ *   curl -X POST "$BASE/api/openclaw/post/prepare" \
+ *     -H "x-openclaw-secret: $SECRET" \
+ *     -F "caption=Hello" \
+ *     -F "photos[]=@slide1.jpg" -F "photos[]=@slide2.jpg"
+ */
 import { NextRequest, NextResponse } from "next/server";
 import sharp from "sharp";
 import { put } from "@vercel/blob";
@@ -19,6 +56,12 @@ import type { TikTokCredentials } from "@/lib/tiktok/api";
 import { getAllCredentials as getAllIgCredentials } from "@/lib/instagram/storage";
 import { getAllCredentials as getAllTtCredentials } from "@/lib/tiktok/storage";
 import { adaptCaptionForTikTok } from "@/lib/tiktok/caption";
+import {
+  parseAccountFilterFromFormData,
+  filterIgCredentials,
+  filterTtCredentials,
+  validateFilteredIds,
+} from "@/lib/account-selection";
 
 const MIN_PHOTOS = 2;
 const MAX_PHOTOS = 10;
@@ -147,6 +190,46 @@ export async function POST(request: NextRequest) {
       },
       { status: 401 },
     );
+  }
+
+  // Per-account filtering (instagramAccountIds[] / tiktokAccountIds[])
+  const accountFilter = parseAccountFilterFromFormData(formData);
+  if (accountFilter.hasAccountFilter) {
+    const filteredIg = filterIgCredentials(igCreds, accountFilter.instagramAccountIds);
+    const filteredTt = filterTtCredentials(ttCreds, accountFilter.tiktokAccountIds);
+
+    const unknownIg = validateFilteredIds(
+      accountFilter.instagramAccountIds,
+      filteredIg.map((c) => c.igUserId),
+    );
+    const unknownTt = validateFilteredIds(
+      accountFilter.tiktokAccountIds,
+      filteredTt.map((c) => c.openId),
+    );
+    if (unknownIg.length > 0 || unknownTt.length > 0) {
+      return NextResponse.json(
+        {
+          success: false,
+          error: `Unknown account IDs: ${[...unknownIg, ...unknownTt].join(", ")}`,
+          code: "INVALID_INPUT",
+        },
+        { status: 400 },
+      );
+    }
+
+    if (filteredIg.length === 0 && filteredTt.length === 0) {
+      return NextResponse.json(
+        {
+          success: false,
+          error: "No accounts selected",
+          code: "INVALID_INPUT",
+        },
+        { status: 400 },
+      );
+    }
+
+    igCreds = filteredIg;
+    ttCreds = filteredTt;
   }
 
   try {

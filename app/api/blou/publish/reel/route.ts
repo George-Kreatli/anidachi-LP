@@ -13,6 +13,12 @@ import {
   fetchPublishStatus,
 } from "@/lib/tiktok/api";
 import type { TikTokCredentials } from "@/lib/tiktok/api";
+import {
+  parseAccountFilterFromJson,
+  filterIgCredentials,
+  filterTtCredentials,
+  validateFilteredIds,
+} from "@/lib/account-selection";
 
 const TT_POLL_INTERVAL_MS = 3000;
 const TT_POLL_TIMEOUT_MS = 2 * 60 * 1000;
@@ -145,7 +151,12 @@ export async function POST(request: NextRequest) {
     );
   }
 
-  let body: { videoUrl: string; caption: string };
+  let body: {
+    videoUrl: string;
+    caption: string;
+    instagramAccountIds?: string[];
+    tiktokAccountIds?: string[];
+  };
   try {
     body = await request.json();
   } catch {
@@ -156,6 +167,37 @@ export async function POST(request: NextRequest) {
   }
 
   const { videoUrl, caption } = body;
+
+  const accountFilter = parseAccountFilterFromJson(body);
+  if (accountFilter.hasAccountFilter) {
+    const filteredIg = filterIgCredentials(igCreds, accountFilter.instagramAccountIds);
+    const filteredTt = filterTtCredentials(ttCreds, accountFilter.tiktokAccountIds);
+
+    const unknownIg = validateFilteredIds(
+      accountFilter.instagramAccountIds,
+      filteredIg.map((c) => c.igUserId),
+    );
+    const unknownTt = validateFilteredIds(
+      accountFilter.tiktokAccountIds,
+      filteredTt.map((c) => c.openId),
+    );
+    if (unknownIg.length > 0 || unknownTt.length > 0) {
+      return NextResponse.json(
+        { error: `Unknown account IDs: ${[...unknownIg, ...unknownTt].join(", ")}`, code: "INVALID_INPUT" },
+        { status: 400 },
+      );
+    }
+
+    if (filteredIg.length === 0 && filteredTt.length === 0) {
+      return NextResponse.json(
+        { error: "No accounts selected", code: "INVALID_INPUT" },
+        { status: 400 },
+      );
+    }
+
+    igCreds = filteredIg;
+    ttCreds = filteredTt;
+  }
   if (!videoUrl || typeof caption !== "string") {
     return NextResponse.json(
       { error: "videoUrl and caption are required" },

@@ -44,6 +44,16 @@ interface AccountResult {
   error?: string;
 }
 
+interface IgAccount {
+  igUserId: string;
+  username: string;
+}
+
+interface TtAccount {
+  openId: string;
+  username: string;
+}
+
 const REEL_MAX_DURATION_SEC = 90;
 const CAROUSEL_VIDEO_MAX_SEC = 60;
 const CAROUSEL_MIN_ITEMS = 2;
@@ -52,8 +62,10 @@ const IMAGE_MIN_WIDTH = 600;
 
 export function PublishClient() {
   const [tab, setTab] = useState<TabType>("reel");
-  const [igCount, setIgCount] = useState(0);
-  const [ttCount, setTtCount] = useState(0);
+  const [igAccounts, setIgAccounts] = useState<IgAccount[]>([]);
+  const [ttAccounts, setTtAccounts] = useState<TtAccount[]>([]);
+  const [selectedIg, setSelectedIg] = useState<Set<string>>(new Set());
+  const [selectedTt, setSelectedTt] = useState<Set<string>>(new Set());
   const [loading, setLoading] = useState(true);
   const [reelFile, setReelFile] = useState<File | null>(null);
   const [reelDuration, setReelDuration] = useState<number | null>(null);
@@ -71,14 +83,47 @@ export function PublishClient() {
     Promise.all([
       fetch("/api/auth/instagram/status")
         .then((r) => r.json())
-        .then((d: { accounts?: unknown[] }) => setIgCount(d.accounts?.length ?? 0))
-        .catch(() => setIgCount(0)),
+        .then((d: { accounts?: IgAccount[] }) => {
+          const accts = d.accounts ?? [];
+          setIgAccounts(accts);
+          setSelectedIg(new Set(accts.map((a) => a.igUserId)));
+        })
+        .catch(() => setIgAccounts([])),
       fetch("/api/auth/tiktok/status")
         .then((r) => r.json())
-        .then((d: { accounts?: unknown[] }) => setTtCount(d.accounts?.length ?? 0))
-        .catch(() => setTtCount(0)),
+        .then((d: { accounts?: TtAccount[] }) => {
+          const accts = d.accounts ?? [];
+          setTtAccounts(accts);
+          setSelectedTt(new Set(accts.map((a) => a.openId)));
+        })
+        .catch(() => setTtAccounts([])),
     ]).finally(() => setLoading(false));
   }, []);
+
+  const toggleIg = (id: string) => {
+    setSelectedIg((prev) => {
+      const next = new Set(prev);
+      if (next.has(id)) next.delete(id); else next.add(id);
+      return next;
+    });
+  };
+
+  const toggleTt = (id: string) => {
+    setSelectedTt((prev) => {
+      const next = new Set(prev);
+      if (next.has(id)) next.delete(id); else next.add(id);
+      return next;
+    });
+  };
+
+  const buildAccountPayload = (): Record<string, string[]> => {
+    const payload: Record<string, string[]> = {};
+    if (selectedIg.size < igAccounts.length || selectedTt.size < ttAccounts.length) {
+      payload.instagramAccountIds = Array.from(selectedIg);
+      payload.tiktokAccountIds = Array.from(selectedTt);
+    }
+    return payload;
+  };
 
   const checkReelVideo = (file: File): Promise<{ duration: number; error?: string }> => {
     return new Promise((resolve) => {
@@ -227,11 +272,11 @@ export function PublishClient() {
       }
       const videoUrl = uploadData.url;
       setStatus("processing");
-      setStatusMessage("Publishing to all accounts…");
+      setStatusMessage(`Publishing to ${selectedIg.size + selectedTt.size} account(s)…`);
       const publishRes = await fetch("/api/blou/publish/reel", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ videoUrl, caption }),
+        body: JSON.stringify({ videoUrl, caption, ...buildAccountPayload() }),
       });
       const publishData = await publishRes.json();
       if (!publishRes.ok && !publishData.results) {
@@ -282,11 +327,11 @@ export function PublishClient() {
         urls.push({ url: uploadData.url, type: item.type });
       }
       setStatus("processing");
-      setStatusMessage("Publishing to all accounts…");
+      setStatusMessage(`Publishing to ${selectedIg.size + selectedTt.size} account(s)…`);
       const publishRes = await fetch("/api/blou/publish/carousel", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ mediaUrls: urls, caption }),
+        body: JSON.stringify({ mediaUrls: urls, caption, ...buildAccountPayload() }),
       });
       const publishData = await publishRes.json();
       if (!publishRes.ok && !publishData.results) {
@@ -309,17 +354,21 @@ export function PublishClient() {
     }
   };
 
+  const selectedCount = selectedIg.size + selectedTt.size;
   const canPublish =
-    status === "idle" ||
+    (status === "idle" ||
     status === "success" ||
     status === "partial" ||
-    status === "error";
+    status === "error") &&
+    selectedCount > 0;
   const isReelValid = reelFile && !reelError;
   const isCarouselValid =
     carouselFiles.length >= CAROUSEL_MIN_ITEMS &&
     carouselFiles.length <= CAROUSEL_MAX_ITEMS &&
     !carouselError;
 
+  const igCount = igAccounts.length;
+  const ttCount = ttAccounts.length;
   const totalAccounts = igCount + ttCount;
 
   if (loading) {
@@ -350,19 +399,56 @@ export function PublishClient() {
 
   return (
     <div className="max-w-2xl">
-      {/* Connected accounts summary */}
-      <div className="flex flex-wrap gap-3 mb-6">
-        {igCount > 0 && (
-          <span className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-teal-50 border border-teal-200 text-sm text-teal-700">
-            <Instagram className="h-3.5 w-3.5" />
-            {igCount} Instagram {igCount === 1 ? "account" : "accounts"}
-          </span>
+      {/* Account selection */}
+      <div className="mb-6 space-y-3">
+        <p className="text-sm font-medium text-stone-700">
+          Publish to ({selectedCount} of {totalAccounts} selected)
+        </p>
+
+        {igAccounts.length > 0 && (
+          <div className="space-y-1.5">
+            <span className="text-xs font-medium text-stone-500 uppercase tracking-wide">Instagram</span>
+            {igAccounts.map((a) => (
+              <label
+                key={a.igUserId}
+                className="flex items-center gap-2 px-3 py-2 rounded-lg bg-stone-50 hover:bg-teal-50 cursor-pointer transition-colors"
+              >
+                <input
+                  type="checkbox"
+                  checked={selectedIg.has(a.igUserId)}
+                  onChange={() => toggleIg(a.igUserId)}
+                  className="rounded border-stone-300 text-teal-600 focus:ring-teal-500"
+                />
+                <Instagram className="h-3.5 w-3.5 text-stone-500" />
+                <span className="text-sm text-stone-700">@{a.username}</span>
+              </label>
+            ))}
+          </div>
         )}
-        {ttCount > 0 && (
-          <span className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-teal-50 border border-teal-200 text-sm text-teal-700">
-            <Music2 className="h-3.5 w-3.5" />
-            {ttCount} TikTok {ttCount === 1 ? "account" : "accounts"}
-          </span>
+
+        {ttAccounts.length > 0 && (
+          <div className="space-y-1.5">
+            <span className="text-xs font-medium text-stone-500 uppercase tracking-wide">TikTok</span>
+            {ttAccounts.map((a) => (
+              <label
+                key={a.openId}
+                className="flex items-center gap-2 px-3 py-2 rounded-lg bg-stone-50 hover:bg-teal-50 cursor-pointer transition-colors"
+              >
+                <input
+                  type="checkbox"
+                  checked={selectedTt.has(a.openId)}
+                  onChange={() => toggleTt(a.openId)}
+                  className="rounded border-stone-300 text-teal-600 focus:ring-teal-500"
+                />
+                <Music2 className="h-3.5 w-3.5 text-stone-500" />
+                <span className="text-sm text-stone-700">@{a.username}</span>
+              </label>
+            ))}
+          </div>
+        )}
+
+        {selectedCount === 0 && (
+          <p className="text-xs text-amber-600">Select at least one account to publish.</p>
         )}
       </div>
 
@@ -558,7 +644,7 @@ export function PublishClient() {
               className="w-full rounded-lg border border-stone-200 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-teal-500 focus:border-transparent"
               placeholder="Write a caption…"
             />
-            {ttCount > 0 && (
+            {selectedTt.size > 0 && (
               <p className="text-xs text-stone-400 mt-1">
                 TikTok title uses the first 90 characters. You can edit the caption in TikTok before posting from drafts.
               </p>
