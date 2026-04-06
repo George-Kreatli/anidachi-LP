@@ -39,10 +39,7 @@ import {
   unauthorizedResponse,
 } from "@/lib/openclaw-auth";
 import { createJob, saveJob } from "@/lib/openclaw-jobs";
-import {
-  ensureAllCredentials as ensureAllIg,
-  createReelContainer,
-} from "@/lib/instagram/graph";
+import { createReelContainer } from "@/lib/instagram/graph";
 import type { InstagramCredentials } from "@/lib/instagram/graph";
 import {
   ensureAllCredentials as ensureAllTt,

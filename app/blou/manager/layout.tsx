@@ -1,16 +1,22 @@
 import type { Metadata } from "next";
 import Link from "next/link";
+import { requireBlouAccess } from "@/lib/blou-access";
+import { BlouManagerLogoutButton } from "./logout-button";
+
+export const dynamic = "force-dynamic";
 
 export const metadata: Metadata = {
   title: "Blou Content Manager",
   description: "Internal tool to publish reels and carousels to Instagram and TikTok.",
 };
 
-export default function ManagerLayout({
+export default async function ManagerLayout({
   children,
 }: {
   children: React.ReactNode;
 }) {
+  await requireBlouAccess("/blou/manager");
+
   return (
     <main className="min-h-screen bg-[#f0f7f4]">
       <header className="border-b border-teal-200/60 bg-white/80 backdrop-blur-md sticky top-0 z-10">
@@ -21,7 +27,7 @@ export default function ManagerLayout({
           >
             Blou
           </Link>
-          <nav className="flex items-center gap-6">
+          <nav className="flex flex-wrap items-center gap-4 sm:gap-6">
             <Link
               href="/blou/manager"
               className="text-sm text-stone-500 hover:text-teal-600 transition-colors"
@@ -34,6 +40,7 @@ export default function ManagerLayout({
             >
               Publish
             </Link>
+            <BlouManagerLogoutButton />
           </nav>
         </div>
       </header>

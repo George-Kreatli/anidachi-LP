@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
+import { requireBlouAccess } from "@/lib/blou-access";
 import {
   Camera,
   Wind,
@@ -9,6 +10,8 @@ import {
   ArrowRight,
   Smartphone,
 } from "lucide-react";
+
+export const dynamic = "force-dynamic";
 
 export const metadata: Metadata = {
   title: "Bloü — Visual Quit Smoking Tracker",
@@ -39,7 +42,9 @@ const FEATURES = [
   },
 ];
 
-export default function BlouPage() {
+export default async function BlouPage() {
+  await requireBlouAccess("/blou");
+
   return (
     <main className="min-h-screen bg-[#f0f7f4]">
       {/* Blou brand: soft teal/sage and sky, clean and calming */}

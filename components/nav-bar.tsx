@@ -30,6 +30,14 @@ export function NavBar() {
             </Link>
           </li>
           <li>
+            <Link
+              href="/kreatli-email-crm"
+              className="text-purple-100 hover:text-white transition-colors"
+            >
+              Kreatli Email CRM
+            </Link>
+          </li>
+          <li>
             <Link href="/blou/privacy" className="text-purple-100 hover:text-white transition-colors">
               Privacy Policy
             </Link>

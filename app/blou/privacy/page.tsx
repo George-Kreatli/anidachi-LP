@@ -1,12 +1,17 @@
 import type { Metadata } from "next";
 import Link from "next/link";
+import { requireBlouAccess } from "@/lib/blou-access";
+
+export const dynamic = "force-dynamic";
 
 export const metadata: Metadata = {
   title: "Privacy Policy — Bloü / AniDachi",
   description: "Privacy Policy for the bloü app. How we collect and use your information.",
 };
 
-export default function PrivacyPage() {
+export default async function PrivacyPage() {
+  await requireBlouAccess("/blou/privacy");
+
   return (
     <main className="min-h-screen bg-gradient-to-br from-purple-50 via-white to-blue-50">
       <header className="border-b border-gray-200 bg-white/80 backdrop-blur-md sticky top-0 z-10">

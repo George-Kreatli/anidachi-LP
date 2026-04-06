@@ -32,6 +32,7 @@ yarn-error.log*
 
 # env files (can opt-in for committing if needed)
 .env*
+!.env.example
 
 # vercel
 .vercel
@@ -44,3 +45,8 @@ next-env.d.ts
 
 # Blou Content Manager local credentials (file-based fallback)
 .data
+
+# Kreatli CRM local data (PII)
+/crm-data/contacts.json
+/crm-data/touches.jsonl
+/crm-data/gmail-tokens.json

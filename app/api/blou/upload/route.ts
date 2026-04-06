@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { put } from "@vercel/blob";
+import { jsonUnauthorizedUnlessKreatliSession } from "@/lib/blou-access";
 
 const ALLOWED_IMAGE_TYPES = ["image/jpeg", "image/jpg", "image/png"];
 const ALLOWED_VIDEO_TYPES = ["video/mp4", "video/quicktime"]; // MOV
@@ -18,6 +19,9 @@ function getExtension(mime: string, filename?: string): string {
 }
 
 export async function POST(request: NextRequest) {
+  const denied = await jsonUnauthorizedUnlessKreatliSession();
+  if (denied) return denied;
+
   if (!process.env.BLOB_READ_WRITE_TOKEN) {
     return NextResponse.json(
       { error: "Upload not configured (BLOB_READ_WRITE_TOKEN)" },

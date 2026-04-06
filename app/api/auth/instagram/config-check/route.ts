@@ -1,4 +1,5 @@
 import { NextResponse } from "next/server";
+import { jsonUnauthorizedUnlessKreatliSession } from "@/lib/blou-access";
 
 export const dynamic = "force-dynamic";
 
@@ -10,6 +11,9 @@ const OPTIONAL = ["INSTAGRAM_OAUTH_REDIRECT_URI"] as const;
  * Remove or restrict in production once done debugging.
  */
 export async function GET() {
+  const denied = await jsonUnauthorizedUnlessKreatliSession();
+  if (denied) return denied;
+
   const hasAppId =
     (process.env.INSTAGRAM_APP_ID || process.env.META_APP_ID || "").trim()
       .length > 0;

@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
+import { jsonUnauthorizedUnlessKreatliSession } from "@/lib/blou-access";
 
 export const dynamic = "force-dynamic";
 
@@ -6,6 +7,9 @@ export const dynamic = "force-dynamic";
 const TIKTOK_SCOPES = "user.info.basic,user.info.profile,video.upload";
 
 export async function GET(request: NextRequest) {
+  const denied = await jsonUnauthorizedUnlessKreatliSession();
+  if (denied) return denied;
+
   const clientKey = process.env.TIKTOK_CLIENT_KEY || "";
   const redirectUri =
     process.env.TIKTOK_REDIRECT_URI ||

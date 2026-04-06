@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
+import { jsonUnauthorizedUnlessKreatliSession } from "@/lib/blou-access";
 import sharp from "sharp";
 import { put } from "@vercel/blob";
 import {
@@ -186,6 +187,9 @@ function blobUrlToProxyUrl(blobUrl: string, origin: string): string {
 }
 
 export async function POST(request: NextRequest) {
+  const denied = await jsonUnauthorizedUnlessKreatliSession();
+  if (denied) return denied;
+
   let igCreds: InstagramCredentials[] = [];
   let ttCreds: TikTokCredentials[] = [];
 

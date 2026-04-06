@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import Image from "next/image";
 import Link from "next/link";
 import { useSearchParams } from "next/navigation";
 import { Button } from "@/components/ui/button";
@@ -236,9 +237,11 @@ export function ConnectClient() {
                 >
                   <div className="flex items-center gap-2">
                     {account.avatarUrl && (
-                      <img
+                      <Image
                         src={account.avatarUrl}
                         alt=""
+                        width={24}
+                        height={24}
                         className="h-6 w-6 rounded-full"
                       />
                     )}

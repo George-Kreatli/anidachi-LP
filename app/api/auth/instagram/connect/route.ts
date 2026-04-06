@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
+import { jsonUnauthorizedUnlessKreatliSession } from "@/lib/blou-access";
 
 // Ensure env is read at request time (not at build time)
 export const dynamic = "force-dynamic";
@@ -11,6 +12,9 @@ const INSTAGRAM_SCOPES = [
 ].join(",");
 
 export async function GET(request: NextRequest) {
+  const denied = await jsonUnauthorizedUnlessKreatliSession();
+  if (denied) return denied;
+
   // Prefer dedicated Instagram app credentials; fall back to META_* if the user reused the same values.
   const appId =
     process.env.INSTAGRAM_APP_ID || process.env.META_APP_ID || "";
