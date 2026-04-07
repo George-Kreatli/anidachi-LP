@@ -66,6 +66,7 @@ export async function POST(request: NextRequest) {
       messageId: sent.id,
       threadId: sent.threadId,
       ...(sent.senderNameNote ? { senderNameNote: sent.senderNameNote } : {}),
+      ...(sent.fromMailbox ? { fromMailbox: sent.fromMailbox } : {}),
     });
   } catch (e) {
     const msg = e instanceof Error ? e.message : "send_failed";

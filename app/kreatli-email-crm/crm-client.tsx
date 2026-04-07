@@ -1,6 +1,5 @@
 "use client";
 
-import Link from "next/link";
 import { useActionState, useEffect, useMemo, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
@@ -117,7 +116,7 @@ function GmailBanner({ status }: { status: GmailUiStatus }) {
         <div className="flex flex-wrap items-center gap-3">
           <span>Connect your account to send email to contacts from this page (send-only OAuth).</span>
           <Button asChild className="bg-blue-700 hover:bg-blue-800">
-            <Link href="/api/kreatli-crm/gmail/connect">Connect Gmail</Link>
+            <a href="/api/kreatli-crm/gmail/connect">Connect Gmail</a>
           </Button>
         </div>
         <p className="mt-3 text-xs text-blue-900/85">
@@ -152,6 +151,39 @@ function GmailBanner({ status }: { status: GmailUiStatus }) {
           Disconnect Gmail
         </Button>
       </div>
+      <p className="mt-3 text-xs leading-relaxed text-green-900/90">
+        Recipients see the <strong>From</strong> header Gmail attaches for the mailbox used on send — not only what
+        Gmail Settings shows. Open <strong>Show original</strong> on a received message and confirm the address
+        matches <strong>{status.email ?? "the connected address above"}</strong>
+        {status.fromEmailOverride ? (
+          <>
+            {" "}
+            (or your <code className="rounded bg-white/70 px-1">GOOGLE_GMAIL_FROM_EMAIL</code> override:{" "}
+            <code className="rounded bg-white/70 px-1">{status.fromEmailOverride}</code>)
+          </>
+        ) : null}
+        . If the address differs, fix <code className="rounded bg-white/70 px-1">GOOGLE_GMAIL_FROM_EMAIL</code> or
+        reconnect so the stored profile matches.
+      </p>
+      <ul className="mt-2 list-inside list-disc text-xs text-green-900/85">
+        <li>
+          <code className="rounded bg-white/70 px-1">GOOGLE_GMAIL_SENDER_NAME</code> on this server:{" "}
+          {status.senderDisplayNameEnvSet ? (
+            <span className="font-medium text-green-800">set</span>
+          ) : (
+            <span className="font-medium text-amber-800">
+              not set — the API will not sync send-as display name; set it in env and restart
+            </span>
+          )}
+        </li>
+        {status.fromEmailOverride ? (
+          <li>
+            Send mailbox override:{" "}
+            <code className="rounded bg-white/70 px-1">{status.fromEmailOverride}</code> — must exist under Gmail →
+            Send mail as.
+          </li>
+        ) : null}
+      </ul>
     </section>
   );
 }
@@ -551,6 +583,7 @@ function ContactCard({
   const [sendBusy, setSendBusy] = useState(false);
   const [sendErr, setSendErr] = useState<string | null>(null);
   const [sendWarn, setSendWarn] = useState<string | null>(null);
+  const [sendDevFromMailbox, setSendDevFromMailbox] = useState<string | null>(null);
   const [logTouchAfterSend, setLogTouchAfterSend] = useState(true);
 
   async function copyRendered() {
@@ -572,6 +605,7 @@ function ContactCard({
   async function sendGmail() {
     setSendErr(null);
     setSendWarn(null);
+    setSendDevFromMailbox(null);
     setSendBusy(true);
     try {
       const r = await fetch("/api/kreatli-crm/gmail/send", {
@@ -587,12 +621,16 @@ function ContactCard({
       const d = (await r.json().catch(() => ({}))) as {
         error?: string;
         senderNameNote?: string;
+        fromMailbox?: string;
       };
       if (!r.ok) throw new Error(d.error || "Send failed");
       setSendSubject("");
       setSendBody("");
       if (d.senderNameNote) {
         setSendWarn(d.senderNameNote);
+      }
+      if (d.fromMailbox) {
+        setSendDevFromMailbox(d.fromMailbox);
       }
       router.refresh();
     } catch (e) {
@@ -692,9 +730,25 @@ function ContactCard({
             </p>
           ) : null}
           {sendWarn ? (
-            <p className="text-sm text-amber-800" role="status">
-              {sendWarn}
-            </p>
+            <div
+              className="rounded-md border border-amber-400 bg-amber-100 px-3 py-2 text-sm font-medium text-amber-950 shadow-sm"
+              role="alert"
+            >
+              <p className="text-xs font-semibold uppercase tracking-wide text-amber-900/90">
+                Sender display name
+              </p>
+              <p className="mt-1">{sendWarn}</p>
+            </div>
+          ) : null}
+          {sendDevFromMailbox ? (
+            <div
+              className="rounded-md border border-sky-300 bg-white/90 px-3 py-2 text-xs text-sky-950"
+              role="status"
+            >
+              <span className="font-semibold text-sky-900">Dev:</span> this send used From mailbox{" "}
+              <code className="rounded bg-sky-100 px-1 py-0.5 font-mono">{sendDevFromMailbox}</code>. Compare to the
+              address in <strong>Show original</strong> on the received message.
+            </div>
           ) : null}
         </div>
       ) : null}

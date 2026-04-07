@@ -114,6 +114,8 @@ export type SendPlaintextEmailResult = {
   threadId?: string | null;
   /** Present when sender name could not be synced to Gmail settings (reconnect OAuth or set name in Gmail). */
   senderNameNote?: string;
+  /** Dev-only: From address Gmail used for this send (compare to Show original on the received message). */
+  fromMailbox?: string;
 };
 
 export async function sendPlaintextEmail(
@@ -176,6 +178,9 @@ export async function sendPlaintextEmail(
     id: res.data.id,
     threadId: res.data.threadId,
     senderNameNote,
+    ...(process.env.NODE_ENV === "development" && fromMailbox
+      ? { fromMailbox }
+      : {}),
   };
 }
 
