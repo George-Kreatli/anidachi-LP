@@ -21,6 +21,17 @@ function failRedirect(request: NextRequest, msg: string) {
   );
 }
 
+function errorToShortString(err: unknown): string {
+  if (!err) return "unknown_error";
+  if (err instanceof Error) return err.message || err.name;
+  if (typeof err === "string") return err;
+  try {
+    return JSON.stringify(err);
+  } catch {
+    return "unstringifiable_error";
+  }
+}
+
 export async function GET(request: NextRequest) {
   if (!(await verifyKreatliCrmSession())) {
     return NextResponse.redirect(new URL("/kreatli-email-crm/login", request.url));
@@ -61,8 +72,10 @@ export async function GET(request: NextRequest) {
     if (email) {
       await mergeGmailTokens({ email });
     }
-  } catch {
-    return failRedirect(request, "token_exchange");
+  } catch (err) {
+    console.error("Gmail OAuth token exchange failed:", err);
+    const msg = errorToShortString(err).slice(0, 300);
+    return failRedirect(request, `token_exchange:${msg}`);
   }
 
   const res = NextResponse.redirect(
