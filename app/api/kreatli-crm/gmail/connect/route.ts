@@ -6,6 +6,7 @@ import {
   getGmailRedirectUri,
   isGmailConfigured,
 } from "@/lib/kreatli-crm/gmail";
+import { getPublicOrigin } from "@/lib/public-origin";
 
 export const dynamic = "force-dynamic";
 
@@ -20,7 +21,7 @@ export async function GET(request: NextRequest) {
     );
   }
 
-  const origin = request.nextUrl.origin;
+  const origin = getPublicOrigin(request);
   const redirectUri = getGmailRedirectUri(origin);
   const oauth2 = createGmailOAuth2(redirectUri);
   if (!oauth2) {
