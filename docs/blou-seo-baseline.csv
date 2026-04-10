@@ -1,0 +1,10 @@
+period,channel,page_group,metric_name,metric_value,source,notes
+baseline_28d,organic,/quit-smoking/*,impressions,,GSC,Fill before rollout
+baseline_28d,organic,/quit-smoking/*,clicks,,GSC,Fill before rollout
+baseline_28d,organic,/quit-smoking/*,ctr,,GSC,Fill before rollout
+baseline_28d,organic,/quit-smoking/*,avg_position,,GSC,Fill before rollout
+baseline_28d,organic,/quit-smoking-calculator/*,sessions,,GA4,Fill before rollout
+baseline_28d,organic,/tools/*,sessions,,GA4,Fill before rollout
+baseline_28d,organic,all,blou_app_store_click,,GA4,Event count
+baseline_28d,organic,all,blou_calculator_engagement,,GA4,Event count
+baseline_28d,organic,web_referrals,app_installs,,AppStoreConnect,Campaign/Source view

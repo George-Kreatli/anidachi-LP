@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import Script from "next/script";
+import { NavBar } from "@/components/nav-bar";
 import "./globals.css";
 
 const GA_MEASUREMENT_ID = "G-W9HZVZ9S0P";
@@ -56,6 +57,7 @@ export default function RootLayout({
             gtag('config', '${GA_MEASUREMENT_ID}');
           `}
         </Script>
+        <NavBar />
         {children}
       </body>
     </html>

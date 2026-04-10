@@ -48,36 +48,30 @@ export default async function BlouPage() {
   return (
     <main className="min-h-screen bg-[#f0f7f4]">
       {/* Blou brand: soft teal/sage and sky, clean and calming */}
-      <header className="border-b border-teal-200/60 bg-white/80 backdrop-blur-md sticky top-0 z-10">
-        <div className="container mx-auto px-4 py-4 flex items-center justify-between">
+      <header className="sticky top-14 z-40 border-b border-teal-200/60 bg-white/80 backdrop-blur-md">
+        <div className="container mx-auto flex items-center justify-between px-4 py-3">
           <Link
-            href="/"
-            className="text-lg font-semibold text-stone-600 hover:text-stone-900 transition-colors"
+            href="/blou"
+            className="text-lg font-semibold text-teal-800 transition-colors hover:text-teal-950"
           >
-            AniDachi
+            Bloü
           </Link>
-          <nav className="flex items-center gap-6">
-            <Link
-              href="/"
-              className="text-sm text-stone-500 hover:text-teal-600 transition-colors"
-            >
-              Home
-            </Link>
+          <nav className="flex flex-wrap items-center gap-4 sm:gap-6">
             <Link
               href="/blou/privacy"
-              className="text-sm text-stone-500 hover:text-teal-600 transition-colors"
+              className="text-sm text-stone-500 transition-colors hover:text-teal-600"
             >
               Privacy
             </Link>
             <Link
               href="/blou/terms"
-              className="text-sm text-stone-500 hover:text-teal-600 transition-colors"
+              className="text-sm text-stone-500 transition-colors hover:text-teal-600"
             >
               Terms
             </Link>
             <Link
               href="/blou/manager"
-              className="text-sm text-stone-500 hover:text-teal-600 transition-colors"
+              className="text-sm text-stone-500 transition-colors hover:text-teal-600"
             >
               Content Manager
             </Link>
@@ -188,6 +182,23 @@ export default async function BlouPage() {
             <Link href="/blou/privacy" className="text-teal-600 hover:underline">Privacy Policy</Link>
             {" · "}
             <Link href="/blou/terms" className="text-teal-600 hover:underline">Terms of Service</Link>
+          </p>
+          <p className="mt-3 flex flex-wrap items-center justify-center gap-x-3 gap-y-1 text-teal-600">
+            <Link href="/quit-smoking" className="hover:underline">
+              Guides &amp; timelines
+            </Link>
+            <span className="text-stone-300" aria-hidden>
+              ·
+            </span>
+            <Link href="/tools/money-calculator" className="hover:underline">
+              Money calculator
+            </Link>
+            <span className="text-stone-300" aria-hidden>
+              ·
+            </span>
+            <Link href="/tools/lung-recovery-timeline" className="hover:underline">
+              Lung recovery
+            </Link>
           </p>
           <p className="mt-2">
             <Link href="/" className="text-teal-600 hover:underline">← Back to AniDachi</Link>

@@ -1,5 +1,4 @@
 import type { Metadata } from "next";
-import { NavBar } from "@/components/nav-bar";
 
 export const metadata: Metadata = {
   title: "Kreatli Email CRM · AniDachi",
@@ -14,7 +13,6 @@ export default function KreatliCrmLayout({
 }>) {
   return (
     <div className="min-h-screen bg-gradient-to-br from-purple-50 via-white to-blue-50">
-      <NavBar />
       {children}
     </div>
   );

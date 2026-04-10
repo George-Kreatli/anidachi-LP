@@ -5,8 +5,8 @@ export function Footer() {
   return (
     <footer className="bg-gray-900 text-white py-16">
       <div className="container mx-auto px-4">
-        <div className="grid md:grid-cols-4 gap-8">
-          <div className="col-span-2">
+        <div className="grid md:grid-cols-2 lg:grid-cols-5 gap-8">
+          <div className="md:col-span-2 lg:col-span-2">
             <div className="flex items-center space-x-2 mb-4">
               <Image
                 src="/Anidachi_logo.png"
@@ -37,6 +37,66 @@ export function Footer() {
                 <a href="#pricing" className="hover:text-white transition-colors">
                   Pricing
                 </a>
+              </li>
+            </ul>
+          </div>
+          <div>
+            <h4 className="font-semibold mb-4">Quit smoking (Bloü)</h4>
+            <ul className="space-y-2 text-gray-400">
+              <li>
+                <Link href="/quit-smoking" className="hover:text-white transition-colors">
+                  Guides &amp; timelines
+                </Link>
+              </li>
+              <li>
+                <Link href="/tools/money-calculator" className="hover:text-white transition-colors">
+                  Money saved calculator
+                </Link>
+              </li>
+              <li>
+                <Link
+                  href="/tools/lung-recovery-timeline"
+                  className="hover:text-white transition-colors"
+                >
+                  Lung recovery timeline
+                </Link>
+              </li>
+              <li className="pt-1 text-xs uppercase tracking-wide text-gray-500">
+                Calculators by country
+              </li>
+              <li>
+                <Link
+                  href="/quit-smoking-calculator/united-states"
+                  className="hover:text-white transition-colors"
+                >
+                  United States
+                </Link>
+              </li>
+              <li>
+                <Link
+                  href="/quit-smoking-calculator/united-kingdom"
+                  className="hover:text-white transition-colors"
+                >
+                  United Kingdom
+                </Link>
+              </li>
+              <li>
+                <Link
+                  href="/quit-smoking-calculator/australia"
+                  className="hover:text-white transition-colors"
+                >
+                  Australia
+                </Link>
+              </li>
+              <li>
+                <Link href="/quit-smoking-calculator/vietnam" className="hover:text-white transition-colors">
+                  Vietnam
+                </Link>
+              </li>
+              <li>
+                <Link href="/quit-smoking-calculator/indonesia" className="hover:text-white transition-colors">
+                  Indonesia
+                </Link>
               </li>
             </ul>
           </div>

@@ -14,30 +14,18 @@ export default async function TermsPage() {
 
   return (
     <main className="min-h-screen bg-gradient-to-br from-purple-50 via-white to-blue-50">
-      <header className="border-b border-gray-200 bg-white/80 backdrop-blur-md sticky top-0 z-10">
-        <div className="container mx-auto px-4 py-4 flex items-center justify-between">
+      <header className="sticky top-14 z-40 border-b border-gray-200 bg-white/80 backdrop-blur-md">
+        <div className="container mx-auto flex items-center justify-between px-4 py-3">
           <Link
-            href="/"
-            className="text-lg font-semibold text-gray-800 hover:text-purple-600 transition-colors"
+            href="/blou"
+            className="text-lg font-semibold text-gray-800 transition-colors hover:text-purple-600"
           >
-            AniDachi
+            Bloü
           </Link>
           <nav className="flex items-center gap-6">
             <Link
-              href="/"
-              className="text-sm text-gray-600 hover:text-purple-600 transition-colors"
-            >
-              Home
-            </Link>
-            <Link
-              href="/blou"
-              className="text-sm text-gray-600 hover:text-purple-600 transition-colors"
-            >
-              Bloü
-            </Link>
-            <Link
               href="/blou/privacy"
-              className="text-sm text-gray-600 hover:text-purple-600 transition-colors"
+              className="text-sm text-gray-600 transition-colors hover:text-purple-600"
             >
               Privacy
             </Link>

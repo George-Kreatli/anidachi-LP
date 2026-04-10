@@ -19,7 +19,7 @@ export default async function ManagerLayout({
 
   return (
     <main className="min-h-screen bg-[#f0f7f4]">
-      <header className="border-b border-teal-200/60 bg-white/80 backdrop-blur-md sticky top-0 z-10">
+      <header className="sticky top-14 z-40 border-b border-teal-200/60 bg-white/80 backdrop-blur-md">
         <div className="container mx-auto px-4 py-4 flex items-center justify-between">
           <Link
             href="/blou"
