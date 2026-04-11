@@ -4,9 +4,10 @@ import { countries, milestones, symptoms } from "@/lib/blou-seo-data";
 const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL || "https://anidachi.com";
 
 /** Static URLs: omit lastModified when there is no stable content version date. */
+/** Omit `/blou` and other auth-only routes so crawlers are not encouraged to index login redirects. */
 const STATIC_PATHS = [
   "/",
-  "/blou",
+  "/tools",
   "/tools/money-calculator",
   "/tools/lung-recovery-timeline",
 ] as const;

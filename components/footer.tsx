@@ -49,6 +49,11 @@ export function Footer() {
                 </Link>
               </li>
               <li>
+                <Link href="/tools" className="hover:text-white transition-colors">
+                  All tools
+                </Link>
+              </li>
+              <li>
                 <Link href="/tools/money-calculator" className="hover:text-white transition-colors">
                   Money saved calculator
                 </Link>

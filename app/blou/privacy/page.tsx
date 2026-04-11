@@ -7,6 +7,7 @@ export const dynamic = "force-dynamic";
 export const metadata: Metadata = {
   title: "Privacy Policy — Bloü / AniDachi",
   description: "Privacy Policy for the bloü app. How we collect and use your information.",
+  robots: { index: false, follow: false },
 };
 
 export default async function PrivacyPage() {

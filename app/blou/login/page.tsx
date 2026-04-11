@@ -1,9 +1,15 @@
 import { redirect } from "next/navigation";
 import { Suspense } from "react";
+import type { Metadata } from "next";
 import { verifyKreatliCrmSession } from "@/lib/kreatli-crm/auth";
 import { BlouLoginForm } from "./blou-login-form";
 
 export const dynamic = "force-dynamic";
+
+export const metadata: Metadata = {
+  title: "Sign in — Bloü",
+  robots: { index: false, follow: false },
+};
 
 export default async function BlouLoginPage() {
   if (await verifyKreatliCrmSession()) {

@@ -2,7 +2,9 @@ import { notFound } from "next/navigation";
 import Script from "next/script";
 import type { Metadata } from "next";
 import { MoneyCalculatorLazy } from "@/components/blou/money-calculator-lazy";
-import { AppStoreCta } from "@/components/blou/app-store-cta";
+import { AppStoreBadgeLink } from "@/components/blou/app-store-badge";
+import { SeoStickyMobileAppCta } from "@/components/blou/seo-sticky-mobile-cta";
+import { SeoPageWithSidebar, type TocItem } from "@/components/blou/seo-toc";
 import { countries } from "@/lib/blou-seo-data";
 import {
   appStoreUrlWithUtm,
@@ -37,6 +39,16 @@ export default async function CountryCalculatorPage({ params }: { params: Params
   const country = countries.find((item) => item.slug === countrySlug);
   if (!country) notFound();
 
+  const campaign = `country_calculator_${country.slug}`;
+  const storeHref = appStoreUrlWithUtm(campaign);
+
+  const tocItems: TocItem[] = [
+    { id: "page-intro", label: "Introduction" },
+    { id: "money-calculator", label: "Calculator" },
+    { id: "get-blo-app", label: "Get Bloü" },
+    { id: "faq", label: "FAQ" },
+  ];
+
   const faq = [
     {
       question: `What is the average cigarette pack price in ${country.country}?`,
@@ -70,55 +82,64 @@ export default async function CountryCalculatorPage({ params }: { params: Params
   ];
 
   return (
-    <main className="mx-auto max-w-4xl px-4 py-10">
-      {schema.map((entry, index) => (
-        <Script
-          key={index}
-          id={`country-calculator-schema-${index}`}
-          type="application/ld+json"
-          dangerouslySetInnerHTML={{ __html: JSON.stringify(entry) }}
-        />
-      ))}
+    <main>
+      <SeoPageWithSidebar tocItems={tocItems} bottomPaddingForMobileCta>
+        {schema.map((entry, index) => (
+          <Script
+            key={index}
+            id={`country-calculator-schema-${index}`}
+            type="application/ld+json"
+            dangerouslySetInnerHTML={{ __html: JSON.stringify(entry) }}
+          />
+        ))}
 
-      <h1 className="text-3xl font-bold text-stone-900">
-        Quit Smoking Money Saved Calculator ({country.country})
-      </h1>
-      <p className="mt-3 text-stone-700">
-        Use local pricing assumptions in {country.currency} to estimate your smoke-free savings and
-        convert that momentum into a long-term quit plan.
-      </p>
+        <h1 className="text-3xl font-bold text-stone-900">
+          Quit Smoking Money Saved Calculator ({country.country})
+        </h1>
 
-      <div className="mt-8">
-        <MoneyCalculatorLazy
-          defaultPackPrice={country.averagePackPrice}
-          currency={country.currency}
-        />
-      </div>
+        <div id="page-intro" className="scroll-mt-28 mt-4 space-y-4">
+          <p className="text-lg text-stone-700">
+            Use local pricing assumptions in {country.currency} to estimate your smoke-free savings
+            and convert that momentum into a long-term quit plan.
+          </p>
+          <div className="flex flex-wrap items-center">
+            <AppStoreBadgeLink href={storeHref} placement={`${campaign}_intro`} />
+          </div>
+        </div>
 
-      <div className="mt-8 rounded-xl border border-stone-200 p-6">
-        <h2 className="text-xl font-semibold text-stone-900">Continue this plan in Bloü</h2>
-        <p className="mt-2 text-stone-700">
-          Save your streak, track milestones, and keep support tools available when cravings hit.
-        </p>
-        <div className="mt-4">
-          <AppStoreCta
-            href={appStoreUrlWithUtm(`country_calculator_${country.slug}`)}
-            placement={`country_calculator_${country.slug}`}
+        <div id="money-calculator" className="scroll-mt-28 mt-8">
+          <MoneyCalculatorLazy
+            defaultPackPrice={country.averagePackPrice}
+            currency={country.currency}
           />
         </div>
-      </div>
 
-      <section className="mt-10">
-        <h2 className="text-2xl font-semibold text-stone-900">FAQ</h2>
-        <div className="mt-4 space-y-4">
-          {faq.map((entry) => (
-            <details key={entry.question} className="rounded-lg border border-stone-200 p-4">
-              <summary className="cursor-pointer font-medium text-stone-900">{entry.question}</summary>
-              <p className="mt-2 text-sm leading-6 text-stone-700">{entry.answer}</p>
-            </details>
-          ))}
+        <div
+          id="get-blo-app"
+          className="scroll-mt-28 mt-8 rounded-xl border border-stone-200 bg-white p-6 shadow-sm"
+        >
+          <h2 className="text-xl font-semibold text-stone-900">Continue this plan in Bloü</h2>
+          <p className="mt-2 text-stone-700">
+            Save your streak, track milestones, and keep support tools available when cravings hit.
+          </p>
+          <div className="mt-4 flex flex-wrap items-center">
+            <AppStoreBadgeLink href={storeHref} placement={`${campaign}_footer_card`} />
+          </div>
         </div>
-      </section>
+
+        <section id="faq" className="scroll-mt-28 mt-10">
+          <h2 className="text-2xl font-semibold text-stone-900">FAQ</h2>
+          <div className="mt-4 space-y-4">
+            {faq.map((entry) => (
+              <details key={entry.question} className="rounded-lg border border-stone-200 p-4">
+                <summary className="cursor-pointer font-medium text-stone-900">{entry.question}</summary>
+                <p className="mt-2 text-sm leading-6 text-stone-700">{entry.answer}</p>
+              </details>
+            ))}
+          </div>
+        </section>
+      </SeoPageWithSidebar>
+      <SeoStickyMobileAppCta href={storeHref} placement={`${campaign}_sticky_mobile`} />
     </main>
   );
 }

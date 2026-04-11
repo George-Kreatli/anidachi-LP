@@ -1,8 +1,15 @@
 import type { Metadata } from "next";
-import { medicalReview, sitePublishDate } from "@/lib/blou-seo-trust";
+import { isMedicalReviewerConfigured, medicalReview, sitePublishDate } from "@/lib/blou-seo-trust";
 
 const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL || "https://anidachi.com";
-const APP_STORE_URL = "https://apps.apple.com/app/blo%C3%BC/id6758997298";
+
+/** Public App Store listing — used in UTM links, JSON-LD `sameAs`, and entity clarity. */
+export const BLOU_APP_STORE_URL =
+  "https://apps.apple.com/us/app/quit-smoking-tracker-blou/id6758997298";
+
+/** Single canonical brand string for schema and OG (matches App Store spelling). */
+export const BLOU_ORGANIZATION_NAME = "Bloü";
+
 
 const DEFAULT_OG_PATH =
   process.env.NEXT_PUBLIC_SEO_OG_IMAGE_PATH || "/Anidachi_logo.png";
@@ -12,7 +19,10 @@ export function absoluteUrl(pathname: string): string {
 }
 
 export function appStoreUrlWithUtm(campaign: string): string {
-  const url = new URL(APP_STORE_URL);
+  const url = new URL(BLOU_APP_STORE_URL);
+  url.searchParams.set("itscg", "30200");
+  url.searchParams.set("itsct", "apps_box_link");
+  url.searchParams.set("mttnsubad", "6758997298");
   url.searchParams.set("utm_source", "seo");
   url.searchParams.set("utm_medium", "organic");
   url.searchParams.set("utm_campaign", campaign);
@@ -50,7 +60,7 @@ export function buildMetadata({
       type: ogType,
       url,
       images,
-      siteName: "Bloü",
+      siteName: BLOU_ORGANIZATION_NAME,
     },
     twitter: {
       card: "summary_large_image",
@@ -59,6 +69,18 @@ export function buildMetadata({
       images: twitterImages,
     },
   };
+}
+
+function blouOrganizationObject(includeUrl = true) {
+  const org: Record<string, unknown> = {
+    "@type": "Organization",
+    name: BLOU_ORGANIZATION_NAME,
+    sameAs: [BLOU_APP_STORE_URL],
+  };
+  if (includeUrl) {
+    org.url = SITE_URL;
+  }
+  return org;
 }
 
 export function buildArticleSchema({
@@ -77,26 +99,16 @@ export function buildArticleSchema({
   const pageUrl = absoluteUrl(pathname);
   const logoUrl = absoluteUrl(DEFAULT_OG_PATH);
 
-  return {
+  const article: Record<string, unknown> = {
     "@context": "https://schema.org",
     "@type": "Article",
     headline: title,
     description,
     datePublished,
     dateModified,
-    author: {
-      "@type": "Organization",
-      name: "Blou",
-      url: SITE_URL,
-    },
-    reviewedBy: {
-      "@type": "Person",
-      name: medicalReview.reviewerName,
-      jobTitle: medicalReview.reviewerTitle,
-    },
+    author: blouOrganizationObject(),
     publisher: {
-      "@type": "Organization",
-      name: "Blou",
+      ...blouOrganizationObject(),
       logo: {
         "@type": "ImageObject",
         url: logoUrl,
@@ -107,6 +119,16 @@ export function buildArticleSchema({
       "@id": pageUrl,
     },
   };
+
+  if (isMedicalReviewerConfigured()) {
+    article.reviewedBy = {
+      "@type": "Person",
+      name: medicalReview.reviewerName,
+      jobTitle: medicalReview.reviewerTitle,
+    };
+  }
+
+  return article;
 }
 
 export function buildFaqSchema(
@@ -157,6 +179,83 @@ export function buildBreadcrumbSchema(
       position: index + 1,
       name: item.name,
       item: absoluteUrl(item.pathname),
+    })),
+  };
+}
+
+export function buildCollectionPageSchema({
+  name,
+  description,
+  pathname,
+}: {
+  name: string;
+  description: string;
+  pathname: string;
+}) {
+  return {
+    "@context": "https://schema.org",
+    "@type": "CollectionPage",
+    name,
+    description,
+    url: absoluteUrl(pathname),
+  };
+}
+
+export function buildWebPageSchema({
+  name,
+  description,
+  pathname,
+}: {
+  name: string;
+  description: string;
+  pathname: string;
+}) {
+  return {
+    "@context": "https://schema.org",
+    "@type": "WebPage",
+    name,
+    description,
+    url: absoluteUrl(pathname),
+  };
+}
+
+export function buildItemListSchema(
+  name: string,
+  items: { name: string; pathname: string }[]
+) {
+  return {
+    "@context": "https://schema.org",
+    "@type": "ItemList",
+    name,
+    numberOfItems: items.length,
+    itemListElement: items.map((item, index) => ({
+      "@type": "ListItem",
+      position: index + 1,
+      name: item.name,
+      url: absoluteUrl(item.pathname),
+    })),
+  };
+}
+
+export function buildHowToSchema({
+  name,
+  description,
+  steps,
+}: {
+  name: string;
+  description: string;
+  steps: { name: string; text: string }[];
+}) {
+  return {
+    "@context": "https://schema.org",
+    "@type": "HowTo",
+    name,
+    description,
+    step: steps.map((step, index) => ({
+      "@type": "HowToStep",
+      position: index + 1,
+      name: step.name,
+      text: step.text,
     })),
   };
 }

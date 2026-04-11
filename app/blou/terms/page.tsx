@@ -7,6 +7,7 @@ export const dynamic = "force-dynamic";
 export const metadata: Metadata = {
   title: "Terms of Service — Bloü / AniDachi",
   description: "Terms of Service for the bloü app.",
+  robots: { index: false, follow: false },
 };
 
 export default async function TermsPage() {

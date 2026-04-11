@@ -1,15 +1,9 @@
 import type { Metadata } from "next";
 import Link from "next/link";
-import { Button } from "@/components/ui/button";
+import { AppStoreBadgeLink } from "@/components/blou/app-store-badge";
 import { requireBlouAccess } from "@/lib/blou-access";
-import {
-  Camera,
-  Wind,
-  Heart,
-  Sparkles,
-  ArrowRight,
-  Smartphone,
-} from "lucide-react";
+import { appStoreUrlWithUtm } from "@/lib/blou-seo";
+import { Camera, Wind, Heart, Sparkles } from "lucide-react";
 
 export const dynamic = "force-dynamic";
 
@@ -17,6 +11,7 @@ export const metadata: Metadata = {
   title: "Bloü — Visual Quit Smoking Tracker",
   description:
     "Track your face timeline, test your healing lungs, and get instant support when cravings hit. See yourself glow up.",
+  robots: { index: false, follow: false },
 };
 
 const FEATURES = [
@@ -102,22 +97,13 @@ export default async function BlouPage() {
               Quitting smoking isn&apos;t about watching numbers go up. It&apos;s about{" "}
               <span className="text-teal-700 font-semibold">watching yourself glow up.</span>
             </p>
-            <Button
-              asChild
-              size="lg"
-              className="bg-teal-600 hover:bg-teal-700 text-white shadow-lg hover:shadow-xl transition-all px-8 py-4 text-base font-semibold rounded-xl"
-            >
-              <a
-                href="https://apps.apple.com/app/blo%C3%BC/id6758997298"
-                target="_blank"
-                rel="noopener noreferrer"
-                className="inline-flex items-center gap-2"
-              >
-                <Smartphone className="h-5 w-5" />
-                Download on the App Store
-                <ArrowRight className="h-4 w-4" />
-              </a>
-            </Button>
+            <div className="flex justify-center">
+              <AppStoreBadgeLink
+                href={appStoreUrlWithUtm("landing_blou_hero")}
+                placement="landing_blou_hero"
+                height={64}
+              />
+            </div>
             <p className="mt-4 text-sm text-stone-500">
               Free · In-App Purchases · iPhone & iPad
             </p>
@@ -158,19 +144,12 @@ export default async function BlouPage() {
           <p className="text-lg md:text-xl text-stone-700 leading-relaxed">
             This isn&apos;t about guilt or tracking every slip. It&apos;s about seeing yourself become the person who doesn&apos;t smoke anymore. Your transformation is already starting. Let Bloü show you.
           </p>
-          <Button
-            asChild
-            variant="outline"
-            className="mt-10 border-teal-300 text-teal-700 hover:bg-teal-50 rounded-xl"
-          >
-            <a
-              href="https://apps.apple.com/app/blo%C3%BC/id6758997298"
-              target="_blank"
-              rel="noopener noreferrer"
-            >
-              Get Bloü on the App Store
-            </a>
-          </Button>
+          <div className="mt-10 flex justify-center">
+            <AppStoreBadgeLink
+              href={appStoreUrlWithUtm("landing_blou_philosophy")}
+              placement="landing_blou_philosophy"
+            />
+          </div>
         </div>
       </section>
 

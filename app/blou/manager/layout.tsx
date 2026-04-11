@@ -8,6 +8,7 @@ export const dynamic = "force-dynamic";
 export const metadata: Metadata = {
   title: "Blou Content Manager",
   description: "Internal tool to publish reels and carousels to Instagram and TikTok.",
+  robots: { index: false, follow: false },
 };
 
 export default async function ManagerLayout({

@@ -38,6 +38,11 @@ export function NavBar() {
             </Link>
           </li>
           <li>
+            <Link href="/tools" className="text-purple-100 hover:text-white transition-colors">
+              Quit smoking tools
+            </Link>
+          </li>
+          <li>
             <Link
               href="/kreatli-email-crm"
               className="text-purple-100 hover:text-white transition-colors"
