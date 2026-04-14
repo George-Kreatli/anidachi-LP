@@ -177,12 +177,16 @@ export async function initInboxVideoPost(
   creds: TikTokCredentials,
   videoUrl: string,
   title: string,
+  description?: string,
 ): Promise<string> {
   const fresh = await refreshIfNeeded(creds);
 
   const body = {
     post_info: {
       title: title.slice(0, 90),
+      ...(description && description.trim()
+        ? { description: description.slice(0, 4000) }
+        : {}),
     },
     source_info: {
       source: "PULL_FROM_URL",

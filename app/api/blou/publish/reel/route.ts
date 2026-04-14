@@ -14,6 +14,7 @@ import {
   fetchPublishStatus,
 } from "@/lib/tiktok/api";
 import type { TikTokCredentials } from "@/lib/tiktok/api";
+import { adaptCaptionForTikTok } from "@/lib/tiktok/caption";
 import {
   parseAccountFilterFromJson,
   filterIgCredentials,
@@ -72,7 +73,13 @@ async function publishToTtAccount(
 ): Promise<AccountResult> {
   try {
     const fresh = await refreshIfNeeded(creds);
-    const publishId = await initInboxVideoPost(fresh, proxyUrl, caption);
+    const { title, description } = adaptCaptionForTikTok(caption);
+    const publishId = await initInboxVideoPost(
+      fresh,
+      proxyUrl,
+      title,
+      description,
+    );
 
     const start = Date.now();
     while (Date.now() - start < TT_POLL_TIMEOUT_MS) {

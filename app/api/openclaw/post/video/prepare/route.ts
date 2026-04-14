@@ -48,7 +48,10 @@ import {
 import type { TikTokCredentials } from "@/lib/tiktok/api";
 import { getAllCredentials as getAllIgCredentials } from "@/lib/instagram/storage";
 import { getAllCredentials as getAllTtCredentials } from "@/lib/tiktok/storage";
-import { adaptCaptionForTikTok } from "@/lib/tiktok/caption";
+import {
+  adaptCaptionForTikTok,
+  summarizeTikTokCaptionTransform,
+} from "@/lib/tiktok/caption";
 import {
   parseAccountFilterFromFormData,
   filterIgCredentials,
@@ -232,11 +235,43 @@ export async function POST(request: NextRequest) {
     );
 
     // TikTok: init inbox video upload for each account
+    const trimmedCaption = caption.trim();
+    const ttCaption = adaptCaptionForTikTok(trimmedCaption);
+    const ttCaptionSummary = summarizeTikTokCaptionTransform(trimmedCaption);
+    const isSuspiciouslyShort =
+      ttCaptionSummary.captionLengthIn >= 60 &&
+      ttCaptionSummary.captionLengthOut < 20;
+
+    console.info("OpenClaw TikTok caption transform", {
+      jobId: job.id,
+      platform: "tiktok",
+      caption_length_in: ttCaptionSummary.captionLengthIn,
+      first_120_chars_in: ttCaptionSummary.first120In,
+      title_extracted: ttCaption.title,
+      caption_length_out: ttCaptionSummary.captionLengthOut,
+      first_120_chars_out: ttCaptionSummary.first120Out,
+      has_non_ascii: ttCaptionSummary.hasNonAscii,
+      hashtags_before: ttCaptionSummary.hashtagsIn,
+      hashtags_after: ttCaptionSummary.hashtagsOut,
+    });
+
+    if (isSuspiciouslyShort) {
+      console.warn("OpenClaw TikTok caption transform suspiciously short", {
+        jobId: job.id,
+        caption_length_in: ttCaptionSummary.captionLengthIn,
+        caption_length_out: ttCaptionSummary.captionLengthOut,
+      });
+    }
+
     await Promise.all(
       ttCreds.map(async (creds) => {
         try {
-          const { title } = adaptCaptionForTikTok(caption.trim());
-          const publishId = await initInboxVideoPost(creds, proxyUrl, title);
+          const publishId = await initInboxVideoPost(
+            creds,
+            proxyUrl,
+            ttCaption.title,
+            ttCaption.description,
+          );
           const acct = job.accounts.find(
             (a) => a.platform === "tiktok" && a.accountId === creds.openId,
           )!;
