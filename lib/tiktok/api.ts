@@ -96,7 +96,23 @@ export async function ensureAllCredentials(): Promise<TikTokCredentials[]> {
   if (all.length === 0) {
     throw apiError("Connect TikTok", 401);
   }
-  return Promise.all(all.map(refreshIfNeeded));
+  const results = await Promise.allSettled(all.map(refreshIfNeeded));
+  const fresh: TikTokCredentials[] = [];
+  for (let i = 0; i < results.length; i++) {
+    const r = results[i];
+    if (r.status === "fulfilled") {
+      fresh.push(r.value);
+    } else {
+      console.error(
+        `TikTok token refresh failed for ${all[i].username} (${all[i].openId}):`,
+        r.reason,
+      );
+    }
+  }
+  if (fresh.length === 0) {
+    throw apiError("All TikTok token refreshes failed", 401);
+  }
+  return fresh;
 }
 
 // ---------------------------------------------------------------------------

@@ -69,9 +69,11 @@ export async function POST(request: NextRequest) {
 
   let igCreds: InstagramCredentials[] = [];
   let ttCreds: TikTokCredentials[] = [];
+  const ttCredsConnected: TikTokCredentials[] = [];
 
   try { igCreds = await getAllIgCredentials(); } catch { /* none connected */ }
   try { ttCreds = await getAllTtCredentials(); } catch { /* none connected */ }
+  ttCredsConnected.push(...ttCreds);
 
   if (ttCreds.length > 0) {
     try { ttCreds = await ensureAllTt(); } catch { ttCreds = []; }
@@ -185,6 +187,20 @@ export async function POST(request: NextRequest) {
     ttCreds = filteredTt;
   }
 
+  if (
+    accountFilter.tiktokAccountIds &&
+    ttCredsConnected.length > 0 &&
+    ttCreds.length < ttCredsConnected.length
+  ) {
+    console.warn("OpenClaw TikTok account filter reduced connected accounts", {
+      requested_tiktok_open_ids: accountFilter.tiktokAccountIds,
+      connected_tiktok_open_ids: ttCredsConnected.map((c) => c.openId),
+      selected_tiktok_open_ids: ttCreds.map((c) => c.openId),
+      connected_tiktok_usernames: ttCredsConnected.map((c) => c.username),
+      selected_tiktok_usernames: ttCreds.map((c) => c.username),
+    });
+  }
+
   try {
     const allAccounts = [
       ...igCreds.map((c) => ({ platform: "instagram" as const, accountId: c.igUserId, username: c.igUsername })),
@@ -241,6 +257,19 @@ export async function POST(request: NextRequest) {
     const isSuspiciouslyShort =
       ttCaptionSummary.captionLengthIn >= 60 &&
       ttCaptionSummary.captionLengthOut < 20;
+    const isOnlyHashtag = /^#[\p{L}\p{N}_]{2,}$/u.test(trimmedCaption);
+
+    if (ttCreds.length > 0 && (isSuspiciouslyShort || isOnlyHashtag)) {
+      return NextResponse.json(
+        {
+          success: false,
+          error:
+            "Caption looks invalid for TikTok (too short / only hashtag). Send the full generated caption text.",
+          code: "INVALID_INPUT",
+        },
+        { status: 400 },
+      );
+    }
 
     console.info("OpenClaw TikTok caption transform", {
       jobId: job.id,

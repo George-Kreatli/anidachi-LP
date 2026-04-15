@@ -52,7 +52,10 @@ import {
 import type { TikTokCredentials } from "@/lib/tiktok/api";
 import { getAllCredentials as getAllIgCredentials } from "@/lib/instagram/storage";
 import { getAllCredentials as getAllTtCredentials } from "@/lib/tiktok/storage";
-import { adaptCaptionForTikTok } from "@/lib/tiktok/caption";
+import {
+  adaptCaptionForTikTok,
+  summarizeTikTokCaptionTransform,
+} from "@/lib/tiktok/caption";
 import {
   parseAccountFilterFromFormData,
   filterIgCredentials,
@@ -72,9 +75,11 @@ export async function POST(request: NextRequest) {
   // Gather all connected accounts across platforms
   let igCreds: InstagramCredentials[] = [];
   let ttCreds: TikTokCredentials[] = [];
+  const ttCredsConnected: TikTokCredentials[] = [];
 
   try { igCreds = await getAllIgCredentials(); } catch { /* none connected */ }
   try { ttCreds = await getAllTtCredentials(); } catch { /* none connected */ }
+  ttCredsConnected.push(...ttCreds);
 
   // Auto-refresh TikTok tokens
   if (ttCreds.length > 0) {
@@ -229,6 +234,20 @@ export async function POST(request: NextRequest) {
     ttCreds = filteredTt;
   }
 
+  if (
+    accountFilter.tiktokAccountIds &&
+    ttCredsConnected.length > 0 &&
+    ttCreds.length < ttCredsConnected.length
+  ) {
+    console.warn("OpenClaw TikTok account filter reduced connected accounts", {
+      requested_tiktok_open_ids: accountFilter.tiktokAccountIds,
+      connected_tiktok_open_ids: ttCredsConnected.map((c) => c.openId),
+      selected_tiktok_open_ids: ttCreds.map((c) => c.openId),
+      connected_tiktok_usernames: ttCredsConnected.map((c) => c.username),
+      selected_tiktok_usernames: ttCreds.map((c) => c.username),
+    });
+  }
+
   try {
     const allAccounts = [
       ...igCreds.map((c) => ({ platform: "instagram" as const, accountId: c.igUserId, username: c.igUsername })),
@@ -320,11 +339,60 @@ export async function POST(request: NextRequest) {
     );
 
     // TikTok: init inbox photo upload for each account
+    const trimmedCaption = caption.trim();
+    let ttCaption = { title: "", description: "" };
+    if (ttCreds.length > 0) {
+      const ttCaptionSummary = summarizeTikTokCaptionTransform(trimmedCaption);
+      const isSuspiciouslyShort =
+        ttCaptionSummary.captionLengthIn >= 60 &&
+        ttCaptionSummary.captionLengthOut < 20;
+      const isOnlyHashtag = /^#[\p{L}\p{N}_]{2,}$/u.test(trimmedCaption);
+
+      if (isSuspiciouslyShort || isOnlyHashtag) {
+        return NextResponse.json(
+          {
+            success: false,
+            error:
+              "Caption looks invalid for TikTok (too short / only hashtag). Send the full generated caption text.",
+            code: "INVALID_INPUT",
+          },
+          { status: 400 },
+        );
+      }
+
+      ttCaption = adaptCaptionForTikTok(trimmedCaption);
+
+      console.info("OpenClaw TikTok caption transform", {
+        jobId: job.id,
+        platform: "tiktok",
+        caption_length_in: ttCaptionSummary.captionLengthIn,
+        first_120_chars_in: ttCaptionSummary.first120In,
+        title_extracted: ttCaption.title,
+        caption_length_out: ttCaptionSummary.captionLengthOut,
+        first_120_chars_out: ttCaptionSummary.first120Out,
+        has_non_ascii: ttCaptionSummary.hasNonAscii,
+        hashtags_before: ttCaptionSummary.hashtagsIn,
+        hashtags_after: ttCaptionSummary.hashtagsOut,
+      });
+
+      if (isSuspiciouslyShort) {
+        console.warn("OpenClaw TikTok caption transform suspiciously short", {
+          jobId: job.id,
+          caption_length_in: ttCaptionSummary.captionLengthIn,
+          caption_length_out: ttCaptionSummary.captionLengthOut,
+        });
+      }
+    }
+
     await Promise.all(
       ttCreds.map(async (creds) => {
         try {
-          const { title, description } = adaptCaptionForTikTok(caption.trim());
-          const publishId = await initInboxPhotoPost(creds, proxyUrls, title, description);
+          const publishId = await initInboxPhotoPost(
+            creds,
+            proxyUrls,
+            ttCaption.title,
+            ttCaption.description,
+          );
           const acct = job.accounts.find(
             (a) => a.platform === "tiktok" && a.accountId === creds.openId,
           )!;
