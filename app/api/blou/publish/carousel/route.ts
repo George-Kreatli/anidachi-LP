@@ -18,7 +18,10 @@ import {
   fetchPublishStatus,
 } from "@/lib/tiktok/api";
 import type { TikTokCredentials } from "@/lib/tiktok/api";
-import { adaptCaptionForTikTok } from "@/lib/tiktok/caption";
+import {
+  adaptCaptionForTikTok,
+  summarizeTikTokCaptionTransform,
+} from "@/lib/tiktok/caption";
 import {
   parseAccountFilterFromJson,
   filterIgCredentials,
@@ -192,9 +195,11 @@ export async function POST(request: NextRequest) {
 
   let igCreds: InstagramCredentials[] = [];
   let ttCreds: TikTokCredentials[] = [];
+  const ttCredsConnected: TikTokCredentials[] = [];
 
   try { igCreds = await ensureAllIg(); } catch { /* none */ }
   try { ttCreds = await getAllTtCredentials(); } catch { /* none */ }
+  ttCredsConnected.push(...ttCreds);
 
   if (igCreds.length === 0 && ttCreds.length === 0) {
     return NextResponse.json(
@@ -219,6 +224,7 @@ export async function POST(request: NextRequest) {
   }
 
   const { mediaUrls, caption } = body;
+  const trimmedCaption = typeof caption === "string" ? caption.trim() : "";
 
   const accountFilter = parseAccountFilterFromJson(body);
   if (accountFilter.hasAccountFilter) {
@@ -250,6 +256,48 @@ export async function POST(request: NextRequest) {
     igCreds = filteredIg;
     ttCreds = filteredTt;
   }
+
+  if (
+    accountFilter.tiktokAccountIds &&
+    ttCredsConnected.length > 0 &&
+    ttCreds.length < ttCredsConnected.length
+  ) {
+    console.warn("Blou TikTok account filter reduced connected accounts", {
+      requested_tiktok_open_ids: accountFilter.tiktokAccountIds,
+      connected_tiktok_open_ids: ttCredsConnected.map((c) => c.openId),
+      selected_tiktok_open_ids: ttCreds.map((c) => c.openId),
+      connected_tiktok_usernames: ttCredsConnected.map((c) => c.username),
+      selected_tiktok_usernames: ttCreds.map((c) => c.username),
+    });
+  }
+
+  if (ttCreds.length > 0) {
+    const summary = summarizeTikTokCaptionTransform(trimmedCaption);
+    const isSuspiciouslyShort = summary.captionLengthIn >= 60 && summary.captionLengthOut < 20;
+    const isOnlyHashtag = /^#[\p{L}\p{N}_]{2,}$/u.test(trimmedCaption);
+
+    console.info("Blou TikTok caption transform", {
+      platform: "tiktok",
+      caption_length_in: summary.captionLengthIn,
+      first_120_chars_in: summary.first120In,
+      caption_length_out: summary.captionLengthOut,
+      first_120_chars_out: summary.first120Out,
+      has_non_ascii: summary.hasNonAscii,
+      hashtags_before: summary.hashtagsIn,
+      hashtags_after: summary.hashtagsOut,
+    });
+
+    if (isSuspiciouslyShort || isOnlyHashtag) {
+      return NextResponse.json(
+        {
+          error:
+            "Caption looks invalid for TikTok (too short / only hashtag). Send the full generated caption text.",
+          code: "INVALID_INPUT",
+        },
+        { status: 400 },
+      );
+    }
+  }
   if (!Array.isArray(mediaUrls) || mediaUrls.length < MIN_ITEMS || mediaUrls.length > MAX_ITEMS) {
     return NextResponse.json(
       { error: `Between ${MIN_ITEMS} and ${MAX_ITEMS} items required` },
@@ -279,10 +327,10 @@ export async function POST(request: NextRequest) {
   const proxyUrls = ttImageUrls.map((url) => blobUrlToProxyUrl(url, origin));
 
   const allResults = await Promise.all([
-    ...igCreds.map((creds) => publishToIgAccount(creds, mediaUrls, caption ?? "")),
+    ...igCreds.map((creds) => publishToIgAccount(creds, mediaUrls, trimmedCaption)),
     ...ttCreds.map((creds) =>
       proxyUrls.length >= 1
-        ? publishToTtAccount(creds, proxyUrls, caption ?? "")
+        ? publishToTtAccount(creds, proxyUrls, trimmedCaption)
         : Promise.resolve<AccountResult>({
             platform: "tiktok",
             accountId: creds.openId,
