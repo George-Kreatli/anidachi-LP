@@ -3,7 +3,10 @@ import Image from "next/image";
 
 export function NavBar() {
   return (
-    <nav className="sticky top-0 z-50 flex min-h-14 w-full items-center border-b border-white/10 bg-purple-900/80 backdrop-blur-md">
+    <nav
+      aria-label="Main navigation"
+      className="sticky top-0 z-50 flex min-h-14 w-full items-center border-b border-white/10 bg-purple-900/80 backdrop-blur-md"
+    >
       <div className="container mx-auto flex w-full items-center justify-between px-4 py-3">
         <Link
           href="/"
@@ -11,17 +14,36 @@ export function NavBar() {
         >
           <Image
             src="/Anidachi_logo.png"
-            alt="AniDachi"
+            alt="AniDachi logo"
             width={28}
             height={28}
             className="object-contain"
           />
           AniDachi
         </Link>
-        <ul className="flex items-center gap-6 text-sm">
+        <ul className="flex items-center gap-4 sm:gap-6 text-sm">
           <li>
-            <Link href="/" className="text-purple-100 hover:text-white transition-colors">
-              Home
+            <Link
+              href="/#how-it-works"
+              className="text-purple-100 hover:text-white transition-colors"
+            >
+              How It Works
+            </Link>
+          </li>
+          <li>
+            <Link
+              href="/#pricing"
+              className="text-purple-100 hover:text-white transition-colors"
+            >
+              Pricing
+            </Link>
+          </li>
+          <li>
+            <Link
+              href="/watch-anime-together"
+              className="text-purple-100 hover:text-white transition-colors"
+            >
+              Guides
             </Link>
           </li>
           <li>
@@ -29,7 +51,7 @@ export function NavBar() {
               href="mailto:goshan.tolochko@gmail.com"
               className="text-purple-100 hover:text-white transition-colors"
             >
-              Contact Us
+              Contact
             </a>
           </li>
         </ul>

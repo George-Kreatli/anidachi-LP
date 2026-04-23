@@ -1,37 +1,65 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# AniDachi — Watch Anime Together
 
-## Getting Started
+AniDachi (アニ友 = "anime friend") is a platform for watching anime together with friends. It includes a landing site, SEO content hub, and internal tools.
 
-First, run the development server:
+## Stack
+
+- **Framework:** Next.js 15 (App Router, React 19)
+- **Styling:** Tailwind CSS 4 + shadcn/ui
+- **Payments:** Stripe Checkout
+- **Analytics:** Google Analytics 4
+- **Hosting:** Vercel
+
+## Local Development
 
 ```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
+cp .env.example .env.local   # Fill in required values
+npm install
+npm run dev                   # Runs on http://localhost:3003
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+## Project Structure
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+```
+app/
+  page.tsx                    # Landing page (home)
+  watch-anime-together/       # Pillar: watch anime together guide
+  watch-crunchyroll-together/ # Pillar: Crunchyroll-specific guide
+  guides/                     # Spoke articles (how-to, comparisons)
+  compare/                    # Comparison pages (vs Teleparty, etc.)
+  glossary/                   # AEO glossary terms
+  watch/[slug]/               # Programmatic anime pages (50+ titles)
+  privacy/                    # Privacy policy
+  terms/                      # Terms of service
+  success/                    # Post-checkout confirmation
+  blou/                       # Internal content manager (noindex)
+  api/                        # API routes (Stripe, auth, media)
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+components/                   # Shared React components
+lib/                          # Utilities, data, analytics
+  anime-data.ts               # Anime title seed for programmatic pages
+  home-faq.ts                 # FAQ data shared between component + JSON-LD
+  gtag.ts                     # GA4 event helper
+```
 
-## Learn More
+## SEO / Content
 
-To learn more about Next.js, take a look at the following resources:
+The site uses a hub-and-spoke content model:
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+- **Pillars:** `/watch-anime-together`, `/watch-crunchyroll-together`
+- **Spokes:** Guide and comparison pages in `/guides/` and `/compare/`
+- **Programmatic:** `/watch/[slug]-with-friends` pages from `lib/anime-data.ts`
+- **Glossary:** AEO-optimized definitions in `/glossary/`
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+Every page includes:
+- Per-route `Metadata` (title, description, canonical, OG, Twitter)
+- JSON-LD structured data (FAQPage, Article, BreadcrumbList, etc.)
+- Internal links to 3+ sibling pages
 
-## Deploy on Vercel
+## Environment Variables
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+See `.env.example` for all variables. Key ones:
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
-
+- `NEXT_PUBLIC_SITE_URL` — canonical domain (production: `https://anidachi.app`)
+- `KREATLI_CRM_PASSWORD` / `KREATLI_CRM_SESSION_SECRET` — internal tools
+- Stripe and Google API keys for payments and CRM

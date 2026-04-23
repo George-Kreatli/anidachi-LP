@@ -7,54 +7,59 @@ import {
 } from "@/components/ui/card";
 import { Users, MessageSquare, History, ArrowRight } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import Link from "next/link";
 
 export function MainAppFeatures() {
   const features = [
     {
+      id: "async-watching",
       icon: Users,
       title: "Asynchronous Group Watching",
-      description:
-        "Create watchrooms and invite friends to watch anime together, even when you're not online at the same time. Pick up where you left off and stay synchronized.",
       benefit: "Never miss watching with friends again",
+      description:
+        "Create watchrooms and invite friends to watch anime together, even when you're not online at the same time. Everyone watches at their own pace — AniDachi tracks individual progress so no one falls behind. Pick up where you left off, mark episodes as watched, and stay synchronized without scheduling conflicts. Perfect for friend groups across different time zones.",
+      link: "/guides/asynchronous-vs-live-watch-party",
       color: "purple",
     },
     {
+      id: "chat",
       icon: MessageSquare,
       title: "Integrated Chat and Discussions",
-      description:
-        "React to your favorite moments, discuss plot twists, and share theories with built-in real-time chat and discussion threads for each episode.",
       benefit: "Share every epic moment instantly",
+      description:
+        "React to your favorite moments, discuss plot twists, and share theories with built-in real-time chat and discussion threads for each episode. Leave time-stamped reactions that your friends see when they catch up. Whether you're debating the latest Attack on Titan reveal or sharing One Piece memes, every conversation stays attached to the episode.",
+      link: "/watch-anime-together",
       color: "blue",
     },
     {
+      id: "history",
       icon: History,
       title: "Personalized Watch History",
-      description:
-        "Track your anime journey with detailed watch history, progress tracking, and personalized recommendations based on your viewing patterns.",
       benefit: "Discover your next favorite anime",
+      description:
+        "Track your anime journey with detailed watch history and progress tracking across all your watchrooms. See what your friends have watched, compare notes on completed series, and keep a permanent record of your anime adventures. Never lose track of which episode you're on, even across multiple shows.",
+      link: "/watch-anime-together",
       color: "green",
     },
   ];
 
   const getColorClasses = (color: string) => {
-    const colors = {
+    const colors: Record<string, string> = {
       purple:
         "bg-purple-100 text-purple-600 group-hover:bg-purple-600 group-hover:text-white",
       blue: "bg-blue-100 text-blue-600 group-hover:bg-blue-600 group-hover:text-white",
       green:
         "bg-green-100 text-green-600 group-hover:bg-green-600 group-hover:text-white",
-      orange:
-        "bg-orange-100 text-orange-600 group-hover:bg-orange-600 group-hover:text-white",
     };
-    return colors[color as keyof typeof colors] || colors.purple;
+    return colors[color] || colors.purple;
   };
 
   return (
-    <section className="py-24 bg-gradient-to-b from-white to-gray-50">
+    <section id="features" className="py-24 bg-gradient-to-b from-white to-gray-50">
       <div className="container mx-auto px-4">
         <div className="text-center mb-16">
           <div className="inline-flex items-center gap-2 bg-purple-100 text-purple-700 px-4 py-2 rounded-full text-sm font-medium mb-4">
-            <span className="w-2 h-2 bg-purple-500 rounded-full animate-pulse"></span>
+            <span className="w-2 h-2 bg-purple-500 rounded-full animate-pulse" />
             Features
           </div>
           <h2 className="text-3xl md:text-5xl font-bold text-gray-900 mb-6">
@@ -62,14 +67,16 @@ export function MainAppFeatures() {
           </h2>
           <p className="text-xl text-gray-600 max-w-3xl mx-auto">
             Transform solo viewing into shared experiences with powerful
-            features designed for anime lovers
+            features designed for anime lovers who want to watch Crunchyroll
+            together
           </p>
         </div>
 
         <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8 max-w-6xl mx-auto mb-12">
-          {features.map((feature, index) => (
+          {features.map((feature) => (
             <Card
-              key={index}
+              key={feature.id}
+              id={feature.id}
               className="group border-0 shadow-lg hover:shadow-2xl transition-all duration-500 hover:-translate-y-2 bg-white p-6"
             >
               <CardHeader className="p-0">
@@ -78,7 +85,10 @@ export function MainAppFeatures() {
                     feature.color
                   )}`}
                 >
-                  <feature.icon className="h-7 w-7 transition-colors duration-300" />
+                  <feature.icon
+                    className="h-7 w-7 transition-colors duration-300"
+                    aria-hidden="true"
+                  />
                 </div>
                 <CardTitle className="text-xl font-bold text-gray-900 mb-2">
                   {feature.title}
@@ -94,23 +104,31 @@ export function MainAppFeatures() {
                 <Button
                   variant="ghost"
                   className="text-purple-600 hover:text-purple-700 p-0 h-auto font-medium group/btn"
+                  asChild
                 >
-                  Learn more
-                  <ArrowRight className="ml-1 h-4 w-4 transition-transform group-hover/btn:translate-x-1" />
+                  <Link href={feature.link}>
+                    Learn more
+                    <ArrowRight
+                      className="ml-1 h-4 w-4 transition-transform group-hover/btn:translate-x-1"
+                      aria-hidden="true"
+                    />
+                  </Link>
                 </Button>
               </CardContent>
             </Card>
           ))}
         </div>
 
-        {/* CTA Section */}
         <div className="text-center">
           <Button
             size="lg"
             className="bg-purple-600 hover:bg-purple-700 text-white px-8 py-4 text-lg font-semibold shadow-lg hover:shadow-xl transition-all duration-300"
+            asChild
           >
-            Sign Up
-            <ArrowRight className="ml-2 h-5 w-5" />
+            <Link href="#pricing">
+              Get Started
+              <ArrowRight className="ml-2 h-5 w-5" aria-hidden="true" />
+            </Link>
           </Button>
         </div>
       </div>

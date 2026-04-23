@@ -1,3 +1,4 @@
+import type { Metadata } from "next";
 import { Button } from "@/components/ui/button";
 import {
   Card,
@@ -6,39 +7,100 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
-import { CheckCircle } from "lucide-react";
+import { CheckCircle, Rocket, Mail, ArrowRight } from "lucide-react";
 import Link from "next/link";
+
+export const metadata: Metadata = {
+  title: "Welcome to AniDachi – Subscription Confirmed",
+  description:
+    "Your AniDachi early-access subscription is confirmed. Here's what happens next.",
+  robots: { index: false, follow: false },
+};
 
 export default function SuccessPage() {
   return (
-    <div className="min-h-screen bg-gradient-to-br from-green-50 to-blue-50 flex items-center justify-center p-4">
+    <div className="min-h-screen bg-gradient-to-br from-purple-50 via-white to-blue-50 flex items-center justify-center p-4">
       <Card className="max-w-2xl w-full">
         <CardHeader className="text-center">
           <div className="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-4">
-            <CheckCircle className="h-8 w-8 text-green-600" />
+            <CheckCircle className="h-8 w-8 text-green-600" aria-hidden="true" />
           </div>
           <CardTitle className="text-2xl font-bold text-gray-900">
-            Thanks for subscribing to AniDachi!
+            You&apos;re In — Welcome to AniDachi!
           </CardTitle>
-          <CardDescription className="text-lg">
-            I am still building the app, so you will not be able to use it yet.
-            If you want to cancel your subscription, write me a short email at{" "}
-            <a
-              href="mailto:goshan.tolochko@gmail.com"
-              className="text-blue-500 underline"
-            >
-              goshan.tolochko@gmail.com
-            </a>
-            . I will cancel your subscription and refund you the money.
+          <CardDescription className="text-lg mt-2">
+            Thanks for becoming a founding member. You&apos;ve locked in
+            early-access pricing for life.
           </CardDescription>
         </CardHeader>
-        <CardContent className="space-y-6">
-          <div className="grid md:grid-cols-2 gap-4">
-            <Button asChild className="h-12">
-              <Link href="/">Sure, I&apos;ll wait!</Link>
+        <CardContent className="space-y-8">
+          <div className="space-y-4">
+            <h3 className="font-semibold text-gray-900 flex items-center gap-2">
+              <Rocket className="h-5 w-5 text-purple-600" aria-hidden="true" />
+              What happens next
+            </h3>
+            <ol className="space-y-3 text-gray-700 text-sm">
+              <li className="flex gap-3">
+                <span className="flex-shrink-0 w-6 h-6 rounded-full bg-purple-100 text-purple-700 text-xs font-bold flex items-center justify-center">
+                  1
+                </span>
+                <span>
+                  We&apos;re finalizing the Chrome extension and watchroom
+                  features. You&apos;ll get an email as soon as early access
+                  opens.
+                </span>
+              </li>
+              <li className="flex gap-3">
+                <span className="flex-shrink-0 w-6 h-6 rounded-full bg-purple-100 text-purple-700 text-xs font-bold flex items-center justify-center">
+                  2
+                </span>
+                <span>
+                  As a founding member, you&apos;ll be first in line for every
+                  new feature — watchrooms, async group watching, and real-time
+                  chat.
+                </span>
+              </li>
+              <li className="flex gap-3">
+                <span className="flex-shrink-0 w-6 h-6 rounded-full bg-purple-100 text-purple-700 text-xs font-bold flex items-center justify-center">
+                  3
+                </span>
+                <span>
+                  Your feedback shapes the product. Reply to any email from us
+                  to share ideas or requests.
+                </span>
+              </li>
+            </ol>
+          </div>
+
+          <div className="bg-gray-50 rounded-lg p-4 text-sm text-gray-600">
+            <h4 className="font-medium text-gray-900 mb-1 flex items-center gap-2">
+              <Mail className="h-4 w-4" aria-hidden="true" />
+              Full refund guarantee
+            </h4>
+            <p>
+              Changed your mind? No worries — email{" "}
+              <a
+                href="mailto:goshan.tolochko@gmail.com"
+                className="text-purple-600 hover:underline"
+              >
+                goshan.tolochko@gmail.com
+              </a>{" "}
+              anytime and we&apos;ll cancel your subscription and refund you
+              promptly. No questions asked.
+            </p>
+          </div>
+
+          <div className="grid sm:grid-cols-2 gap-4">
+            <Button asChild className="h-12 bg-purple-600 hover:bg-purple-700">
+              <Link href="/">
+                Explore AniDachi
+                <ArrowRight className="ml-2 h-4 w-4" aria-hidden="true" />
+              </Link>
             </Button>
             <Button variant="outline" asChild className="h-12 bg-transparent">
-              <Link href="/">I want to cancel</Link>
+              <a href="mailto:goshan.tolochko@gmail.com">
+                Contact Us
+              </a>
             </Button>
           </div>
         </CardContent>

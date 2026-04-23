@@ -2,9 +2,10 @@ import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import Script from "next/script";
 import { NavBar } from "@/components/nav-bar";
+import { AnalyticsEvents } from "@/components/analytics-events";
+import { OrganizationJsonLd } from "@/components/json-ld";
+import { GA_MEASUREMENT_ID } from "@/lib/gtag";
 import "./globals.css";
-
-const GA_MEASUREMENT_ID = "G-W9HZVZ9S0P";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -17,17 +18,28 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "AniDachi – Watch Anime Together",
+  title: {
+    default: "AniDachi – Watch Anime Together | Sync Crunchyroll with Friends",
+    template: "%s | AniDachi",
+  },
   description:
-    "AniDachi is a platform for watching anime together. Subscribe for watchrooms, real-time chat, Chrome extension, and more.",
+    "AniDachi lets you watch anime together with friends. Create watchrooms, sync Crunchyroll playback, chat in real-time, and track your anime journey — even asynchronously.",
   metadataBase: new URL(
-    process.env.NEXT_PUBLIC_SITE_URL || "https://anidachi.com"
+    process.env.NEXT_PUBLIC_SITE_URL || "https://anidachi.app"
   ),
+  alternates: { canonical: "/" },
   openGraph: {
+    title: "AniDachi – Watch Anime Together | Sync Crunchyroll with Friends",
+    description:
+      "Create watchrooms, sync Crunchyroll playback with friends, chat in real-time, and track your anime journey — even asynchronously.",
+    type: "website",
+    siteName: "AniDachi",
+  },
+  twitter: {
+    card: "summary_large_image",
     title: "AniDachi – Watch Anime Together",
     description:
-      "AniDachi is a platform for watching anime together. Subscribe for watchrooms, real-time chat, Chrome extension, and more.",
-    type: "website",
+      "Create watchrooms, sync Crunchyroll playback with friends, and chat in real-time.",
   },
   robots: { index: true, follow: true },
 };
@@ -45,6 +57,12 @@ export default function RootLayout({
       <body
         className={`${geistSans.variable} ${geistMono.variable} antialiased`}
       >
+        <a
+          href="#main-content"
+          className="sr-only focus:not-sr-only focus:absolute focus:top-2 focus:left-2 focus:z-[100] focus:bg-purple-600 focus:text-white focus:px-4 focus:py-2 focus:rounded"
+        >
+          Skip to main content
+        </a>
         <Script
           src={`https://www.googletagmanager.com/gtag/js?id=${GA_MEASUREMENT_ID}`}
           strategy="afterInteractive"
@@ -59,6 +77,8 @@ export default function RootLayout({
         </Script>
         <NavBar />
         {children}
+        <OrganizationJsonLd />
+        <AnalyticsEvents />
       </body>
     </html>
   );

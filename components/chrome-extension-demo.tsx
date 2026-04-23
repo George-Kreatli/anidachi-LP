@@ -159,10 +159,11 @@ export function ChromeExtensionDemo() {
               <div className="absolute inset-0 bg-gradient-to-br from-orange-900/20 to-red-900/20">
                 <Image
                   src="/AOT.jpg"
-                  alt="Anime Episode"
+                  alt="Attack on Titan anime episode playing on Crunchyroll with AniDachi extension overlay"
                   className="w-full h-full object-cover opacity-80"
                   width={1920}
                   height={1080}
+                  priority
                 />
 
                 {/* Video Controls */}
