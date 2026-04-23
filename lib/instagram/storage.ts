@@ -194,4 +194,3 @@ export async function clearCredentials(igUserId?: string): Promise<void> {
 export async function clearAllCredentials(): Promise<void> {
   await clearCredentials();
 }
-//test
