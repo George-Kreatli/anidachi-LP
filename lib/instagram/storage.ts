@@ -50,7 +50,7 @@ async function getAllFromBlob(): Promise<InstagramCredentials[]> {
       return [];
     }
     return parsed.filter(
-      (c: InstagramCredentials) => c.accessToken && c.igUserId
+      (c: InstagramCredentials) => c.accessToken && c.igUserId,
     );
   } catch {
     return [];
@@ -99,7 +99,7 @@ async function getAllFromFile(): Promise<InstagramCredentials[]> {
       return [];
     }
     return parsed.filter(
-      (c: InstagramCredentials) => c.accessToken && c.igUserId
+      (c: InstagramCredentials) => c.accessToken && c.igUserId,
     );
   } catch {
     return [];
@@ -109,7 +109,11 @@ async function getAllFromFile(): Promise<InstagramCredentials[]> {
 async function saveAllToFile(accounts: InstagramCredentials[]): Promise<void> {
   const dir = join(process.cwd(), ".data");
   await mkdir(dir, { recursive: true });
-  await writeFile(credentialsPath(), JSON.stringify(accounts, null, 2), "utf-8");
+  await writeFile(
+    credentialsPath(),
+    JSON.stringify(accounts, null, 2),
+    "utf-8",
+  );
 }
 
 // ---------------------------------------------------------------------------
@@ -167,7 +171,9 @@ export async function clearCredentials(igUserId?: string): Promise<void> {
       try {
         const { unlink } = await import("fs/promises");
         await unlink(credentialsPath());
-      } catch { /* ignore */ }
+      } catch {
+        /* ignore */
+      }
     }
     return;
   }
@@ -188,3 +194,4 @@ export async function clearCredentials(igUserId?: string): Promise<void> {
 export async function clearAllCredentials(): Promise<void> {
   await clearCredentials();
 }
+//test
