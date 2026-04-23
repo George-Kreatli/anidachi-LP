@@ -13,7 +13,7 @@ export const metadata: Metadata = {
 
 export default async function BlouLoginPage() {
   if (await verifyKreatliCrmSession()) {
-    redirect("/blou");
+    redirect("/blou/manager");
   }
 
   return (

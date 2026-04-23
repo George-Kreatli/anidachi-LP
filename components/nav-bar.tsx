@@ -25,29 +25,6 @@ export function NavBar() {
             </Link>
           </li>
           <li>
-            <Link
-              href="/quit-smoking"
-              className="text-purple-100 hover:text-white transition-colors"
-            >
-              Quit smoking guides
-            </Link>
-          </li>
-          <li>
-            <Link href="/tools" className="text-purple-100 hover:text-white transition-colors">
-              Quit smoking tools
-            </Link>
-          </li>
-          <li>
-            <Link href="/blou/privacy" className="text-purple-100 hover:text-white transition-colors">
-              Privacy Policy
-            </Link>
-          </li>
-          <li>
-            <Link href="/blou/terms" className="text-purple-100 hover:text-white transition-colors">
-              Terms of Service
-            </Link>
-          </li>
-          <li>
             <a
               href="mailto:goshan.tolochko@gmail.com"
               className="text-purple-100 hover:text-white transition-colors"

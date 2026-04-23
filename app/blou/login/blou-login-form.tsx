@@ -5,8 +5,8 @@ import { useMemo, useState } from "react";
 import { Button } from "@/components/ui/button";
 
 function safeNextParam(raw: string | null): string {
-  if (!raw || !raw.startsWith("/") || raw.startsWith("//")) return "/blou";
-  if (!raw.startsWith("/blou")) return "/blou";
+  if (!raw || !raw.startsWith("/") || raw.startsWith("//")) return "/blou/manager";
+  if (!raw.startsWith("/blou")) return "/blou/manager";
   return raw;
 }
 

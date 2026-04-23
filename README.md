@@ -35,18 +35,3 @@ The easiest way to deploy your Next.js app is to use the [Vercel Platform](https
 
 Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
 
-## Blou SEO Pages
-
-The repository now includes programmatic SEO routes for Blou:
-
-- `app/quit-smoking/[slug]/page.tsx` (milestone + symptom templates)
-- `app/quit-smoking-calculator/[countrySlug]/page.tsx` (country calculator template)
-- `app/tools/money-calculator/page.tsx`
-- `app/tools/lung-recovery-timeline/page.tsx`
-- `app/sitemap.ts` and `app/robots.ts`
-
-Operations docs:
-
-- `docs/blou-seo-operations.md`
-- `docs/blou-seo-baseline.csv`
-- `docs/blou-seo-experiments.md`

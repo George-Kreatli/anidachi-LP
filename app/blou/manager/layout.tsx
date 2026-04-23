@@ -23,7 +23,7 @@ export default async function ManagerLayout({
       <header className="sticky top-14 z-40 border-b border-teal-200/60 bg-white/80 backdrop-blur-md">
         <div className="container mx-auto px-4 py-4 flex items-center justify-between">
           <Link
-            href="/blou"
+            href="/blou/manager"
             className="text-lg font-semibold text-stone-600 hover:text-stone-900 transition-colors"
           >
             Blou
