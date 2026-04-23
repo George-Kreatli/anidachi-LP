@@ -25,11 +25,6 @@ export function NavBar() {
             </Link>
           </li>
           <li>
-            <Link href="/blou" className="text-purple-100 hover:text-white transition-colors">
-              Bloü
-            </Link>
-          </li>
-          <li>
             <Link
               href="/quit-smoking"
               className="text-purple-100 hover:text-white transition-colors"
@@ -40,14 +35,6 @@ export function NavBar() {
           <li>
             <Link href="/tools" className="text-purple-100 hover:text-white transition-colors">
               Quit smoking tools
-            </Link>
-          </li>
-          <li>
-            <Link
-              href="/kreatli-email-crm"
-              className="text-purple-100 hover:text-white transition-colors"
-            >
-              Kreatli Email CRM
             </Link>
           </li>
           <li>

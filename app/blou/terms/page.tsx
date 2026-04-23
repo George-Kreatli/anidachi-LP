@@ -1,6 +1,5 @@
 import type { Metadata } from "next";
 import Link from "next/link";
-import { requireBlouAccess } from "@/lib/blou-access";
 
 export const dynamic = "force-dynamic";
 
@@ -10,9 +9,7 @@ export const metadata: Metadata = {
   robots: { index: false, follow: false },
 };
 
-export default async function TermsPage() {
-  await requireBlouAccess("/blou/terms");
-
+export default function TermsPage() {
   return (
     <main className="min-h-screen bg-gradient-to-br from-purple-50 via-white to-blue-50">
       <header className="sticky top-14 z-40 border-b border-gray-200 bg-white/80 backdrop-blur-md">
