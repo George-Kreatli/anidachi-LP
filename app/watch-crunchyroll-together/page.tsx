@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import Link from "next/link";
-import { SeoPageLayout } from "@/components/seo-page-layout";
+import { SeoPageLayout, type TocHeading } from "@/components/seo-page-layout";
 
 export const metadata: Metadata = {
   title: "Watch Crunchyroll Together — Sync Anime with Friends in 2026",
@@ -48,6 +48,15 @@ const faq = [
   },
 ];
 
+const tocHeadings: TocHeading[] = [
+  { id: "no-native-watch-party", label: "Why no built-in watch party", level: 2 },
+  { id: "step-by-step", label: "Step-by-step", level: 2 },
+  { id: "compare-methods", label: "Compare methods", level: 2 },
+  { id: "anidachi-difference", label: "What makes AniDachi different", level: 2 },
+  { id: "related", label: "Related guides", level: 2 },
+  { id: "faq", label: "FAQ", level: 2 },
+];
+
 export default function WatchCrunchyrollTogetherPage() {
   return (
     <SeoPageLayout
@@ -59,8 +68,9 @@ export default function WatchCrunchyrollTogetherPage() {
       description="The complete guide to watching Crunchyroll with friends using sync, chat, and async watchrooms."
       url="/watch-crunchyroll-together"
       datePublished="2026-04-23"
-      dateModified="2026-04-23"
+      dateModified="2026-04-24"
       faq={faq}
+      headings={tocHeadings}
     >
       <h1 className="text-4xl md:text-5xl font-bold text-gray-900 mb-6">
         Watch Crunchyroll Together with Friends
@@ -77,7 +87,10 @@ export default function WatchCrunchyrollTogetherPage() {
         scheduling required.
       </p>
 
-      <h2 className="text-2xl font-bold text-gray-900 mt-12 mb-4">
+      <h2
+        id="no-native-watch-party"
+        className="text-2xl font-bold text-gray-900 mt-12 mb-4 scroll-mt-24"
+      >
         Why Crunchyroll Doesn&apos;t Have a Watch Party Feature
       </h2>
       <p className="text-gray-700 leading-relaxed mb-6">
@@ -88,7 +101,10 @@ export default function WatchCrunchyrollTogetherPage() {
         and Crunchyroll Party, or screen sharing via Discord.
       </p>
 
-      <h2 className="text-2xl font-bold text-gray-900 mt-12 mb-4">
+      <h2
+        id="step-by-step"
+        className="text-2xl font-bold text-gray-900 mt-12 mb-4 scroll-mt-24"
+      >
         How to Watch Crunchyroll Together (Step by Step)
       </h2>
       <ol className="space-y-4 text-gray-700 mb-8">
@@ -114,7 +130,10 @@ export default function WatchCrunchyrollTogetherPage() {
         </li>
       </ol>
 
-      <h2 className="text-2xl font-bold text-gray-900 mt-12 mb-4">
+      <h2
+        id="compare-methods"
+        className="text-2xl font-bold text-gray-900 mt-12 mb-4 scroll-mt-24"
+      >
         Best Ways to Watch Crunchyroll with Friends
       </h2>
       <p className="text-gray-700 leading-relaxed mb-4">
@@ -165,7 +184,10 @@ export default function WatchCrunchyrollTogetherPage() {
         </table>
       </div>
 
-      <h2 className="text-2xl font-bold text-gray-900 mt-12 mb-4">
+      <h2
+        id="anidachi-difference"
+        className="text-2xl font-bold text-gray-900 mt-12 mb-4 scroll-mt-24"
+      >
         What Makes AniDachi Different
       </h2>
       <p className="text-gray-700 leading-relaxed mb-6">
@@ -177,7 +199,10 @@ export default function WatchCrunchyrollTogetherPage() {
         lives.
       </p>
 
-      <h2 className="text-2xl font-bold text-gray-900 mt-12 mb-4">
+      <h2
+        id="related"
+        className="text-2xl font-bold text-gray-900 mt-12 mb-4 scroll-mt-24"
+      >
         Related Guides
       </h2>
       <ul className="space-y-2 text-purple-600">

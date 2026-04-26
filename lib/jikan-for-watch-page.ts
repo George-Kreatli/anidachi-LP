@@ -1,0 +1,84 @@
+import { cache } from "react";
+import {
+  getAnimeById,
+  getAnimeRecommendations,
+  type JikanAnime,
+  type JikanRecommendation,
+} from "@/lib/jikan";
+import { animeList, type AnimeEntry } from "@/lib/anime-data";
+import { getSlugByMalIdMap } from "@/lib/anime-mal-ids";
+
+/** Cached for the RSC so metadata + page body can share one Jikan round-trip per slug. */
+export const fetchJikanForWatchPage = cache(
+  async (malId: number) => {
+    try {
+      const [jikanAnime, recs] = await Promise.all([
+        getAnimeById(malId),
+        getAnimeRecommendations(malId),
+      ]);
+      return { jikanAnime, recs } as const;
+    } catch {
+      return null;
+    }
+  }
+);
+
+export function resolveRelatedFromJikan(
+  recs: JikanRecommendation[] | null | undefined,
+  currentSlug: string
+): AnimeEntry[] {
+  if (!recs?.length) return [];
+  const malToSlug = getSlugByMalIdMap();
+  const out: AnimeEntry[] = [];
+  for (const r of recs) {
+    const id = r.entry.mal_id;
+    const slug = malToSlug.get(id);
+    if (!slug || slug === currentSlug) continue;
+    const entry = animeList.find((a) => a.slug === slug);
+    if (entry) out.push(entry);
+    if (out.length >= 3) break;
+  }
+  return out;
+}
+
+export function formatEpisodesForUi(
+  j: JikanAnime | null,
+  staticEpisodes: string
+): string {
+  if (j == null) return staticEpisodes;
+  const n = j.episodes;
+  if (n == null || n < 1) return staticEpisodes;
+  if (j.airing) {
+    return `${n}+ episodes (airing — count may change)`;
+  }
+  return `${n} episodes`;
+}
+
+export function formatScoreLine(j: JikanAnime | null): string | null {
+  if (j?.score == null || j.score <= 0) return null;
+  return `★ ${j.score.toFixed(1)} / 10 (MAL)`;
+}
+
+export function formatMembersLine(j: JikanAnime | null): string | null {
+  if (j?.members == null || j.members < 1) return null;
+  return `${j.members.toLocaleString("en-US")} members (MAL community)`;
+}
+
+export function jikanStatusLine(j: JikanAnime | null): string | null {
+  if (j == null) return null;
+  if (j.status) return j.status;
+  if (j.airing) return "Currently Airing";
+  return "Finished Airing";
+}
+
+export function jikanGenresText(j: JikanAnime | null, fallback: string[]): string {
+  const g = j?.genres;
+  if (g && g.length > 0) {
+    return g
+      .map((x) => x.name)
+      .filter(Boolean)
+      .slice(0, 5)
+      .join(", ");
+  }
+  return fallback.join(", ");
+}

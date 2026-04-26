@@ -1,0 +1,69 @@
+/**
+ * MyAnimeList numeric IDs (for Jikan API v4) keyed by the site’s `AnimeEntry.slug`.
+ * Keep in sync with `lib/anime-data.ts`.
+ * Source: myanimelist.net (cross-checked with Jikan decompression where possible).
+ */
+export const MAL_ID_BY_SLUG: Record<string, number> = {
+  "attack-on-titan": 16498,
+  "one-piece": 21,
+  "demon-slayer": 38000,
+  "jujutsu-kaisen": 40748,
+  "chainsaw-man": 44511,
+  "solo-leveling": 52299,
+  "frieren-beyond-journeys-end": 52991,
+  "dandadan": 57334,
+  "my-hero-academia": 31964,
+  "naruto": 20,
+  "spy-x-family": 50265,
+  "the-apothecary-diaries": 54428,
+  "bleach": 269,
+  "dragon-ball-super": 30694,
+  "one-punch-man": 30276,
+  "mob-psycho-100": 31933,
+  "fullmetal-alchemist-brotherhood": 5114,
+  "hunter-x-hunter": 11061,
+  "death-note": 1535,
+  "steins-gate": 9253,
+  "vinland-saga": 37521,
+  "mushoku-tensei": 39535,
+  "re-zero": 31240,
+  "violet-evergarden": 33356,
+  "made-in-abyss": 34599,
+  "code-geass": 2904,
+  "neon-genesis-evangelion": 30,
+  "cowboy-bebop": 1,
+  "tokyo-revengers": 42249,
+  "black-clover": 34572,
+  "tower-of-god": 40223,
+  "kaguya-sama": 39996,
+  "bocchi-the-rock": 57524,
+  "oshi-no-ko": 52034,
+  "sword-art-online": 11757,
+  "tokyo-ghoul": 22319,
+  "konosuba": 30831,
+  "haikyuu": 20583,
+  "blue-lock": 50613,
+  "undead-unluck": 49918,
+  "that-time-i-got-reincarnated-as-a-slime": 37407,
+  "dr-stone": 38691,
+  "dororo": 37520,
+  "dorohedoro": 38668,
+  "fire-force": 40956,
+  "overlord": 29803,
+  "berserk": 34034,
+  "parasyte": 22535,
+  "erased": 31043,
+  "hells-paradise": 46569,
+} as const;
+
+export function getMalIdForSlug(slug: string): number | undefined {
+  return MAL_ID_BY_SLUG[slug];
+}
+
+export function getSlugByMalIdMap(): ReadonlyMap<number, string> {
+  return new Map(
+    (Object.entries(MAL_ID_BY_SLUG) as [string, number][]).map(
+      ([slug, id]) => [id, slug]
+    )
+  );
+}

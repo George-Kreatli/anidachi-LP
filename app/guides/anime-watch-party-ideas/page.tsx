@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import Link from "next/link";
-import { SeoPageLayout } from "@/components/seo-page-layout";
+import { SeoPageLayout, type TocHeading } from "@/components/seo-page-layout";
 
 export const metadata: Metadata = {
   title: "Anime Watch Party Ideas — Fun Ways to Watch with Friends (2026)",
@@ -22,6 +22,14 @@ const faq = [
   },
 ];
 
+const tocHeadings: TocHeading[] = [
+  { id: "online-ideas", label: "Online ideas", level: 2 },
+  { id: "in-person", label: "In-person ideas", level: 2 },
+  { id: "best-anime", label: "Best anime for groups", level: 2 },
+  { id: "related", label: "Related", level: 2 },
+  { id: "faq", label: "FAQ", level: 2 },
+];
+
 export default function AnimeWatchPartyIdeasPage() {
   return (
     <SeoPageLayout
@@ -34,8 +42,9 @@ export default function AnimeWatchPartyIdeasPage() {
       description="Creative ways to host the perfect anime watch party."
       url="/guides/anime-watch-party-ideas"
       datePublished="2026-04-23"
-      dateModified="2026-04-23"
+      dateModified="2026-04-24"
       faq={faq}
+      headings={tocHeadings}
     >
       <h1 className="text-4xl font-bold text-gray-900 mb-6">
         Anime Watch Party Ideas for 2026
@@ -51,7 +60,10 @@ export default function AnimeWatchPartyIdeasPage() {
         make your next anime session memorable.
       </p>
 
-      <h2 className="text-2xl font-bold text-gray-900 mt-12 mb-4">
+      <h2
+        id="online-ideas"
+        className="text-2xl font-bold text-gray-900 mt-12 mb-4 scroll-mt-24"
+      >
         Online Watch Party Ideas
       </h2>
       <ul className="list-disc pl-6 space-y-3 text-gray-700 mb-8">
@@ -81,7 +93,10 @@ export default function AnimeWatchPartyIdeasPage() {
         </li>
       </ul>
 
-      <h2 className="text-2xl font-bold text-gray-900 mt-12 mb-4">
+      <h2
+        id="in-person"
+        className="text-2xl font-bold text-gray-900 mt-12 mb-4 scroll-mt-24"
+      >
         In-Person Watch Party Ideas
       </h2>
       <ul className="list-disc pl-6 space-y-3 text-gray-700 mb-8">
@@ -91,7 +106,10 @@ export default function AnimeWatchPartyIdeasPage() {
         <li><strong>Projector &amp; Blankets:</strong> Set up a projector for a cinema-style experience.</li>
       </ul>
 
-      <h2 className="text-2xl font-bold text-gray-900 mt-12 mb-4">
+      <h2
+        id="best-anime"
+        className="text-2xl font-bold text-gray-900 mt-12 mb-4 scroll-mt-24"
+      >
         Best Anime for Group Watching
       </h2>
       <p className="text-gray-700 mb-4">
@@ -101,7 +119,10 @@ export default function AnimeWatchPartyIdeasPage() {
         </Link>
       </p>
 
-      <h2 className="text-2xl font-bold text-gray-900 mt-12 mb-4">
+      <h2
+        id="related"
+        className="text-2xl font-bold text-gray-900 mt-12 mb-4 scroll-mt-24"
+      >
         Related Guides
       </h2>
       <ul className="space-y-2 text-purple-600">

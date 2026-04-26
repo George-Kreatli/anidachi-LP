@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import Link from "next/link";
-import { SeoPageLayout } from "@/components/seo-page-layout";
+import { SeoPageLayout, type TocHeading } from "@/components/seo-page-layout";
 
 export const metadata: Metadata = {
   title: "Asynchronous vs Live Anime Watch Parties — Which Is Better?",
@@ -27,6 +27,17 @@ const faq = [
   },
 ];
 
+const tocHeadings: TocHeading[] = [
+  { id: "what-live", label: "What is a live watch party?", level: 2 },
+  { id: "what-async", label: "What is async watching?", level: 2 },
+  { id: "comparison", label: "Comparison", level: 2 },
+  { id: "when-live", label: "When to go live", level: 2 },
+  { id: "when-async", label: "When to go async", level: 2 },
+  { id: "tools", label: "Tools", level: 2 },
+  { id: "related", label: "Related", level: 2 },
+  { id: "faq", label: "FAQ", level: 2 },
+];
+
 export default function AsyncVsLivePage() {
   return (
     <SeoPageLayout
@@ -39,8 +50,9 @@ export default function AsyncVsLivePage() {
       description="When to use async and live watching, and which tools support each."
       url="/guides/asynchronous-vs-live-watch-party"
       datePublished="2026-04-23"
-      dateModified="2026-04-23"
+      dateModified="2026-04-24"
       faq={faq}
+      headings={tocHeadings}
     >
       <h1 className="text-4xl font-bold text-gray-900 mb-6">
         Asynchronous vs Live Anime Watch Parties: Which Is Right for You?
@@ -56,7 +68,10 @@ export default function AsyncVsLivePage() {
         for your anime group.
       </p>
 
-      <h2 className="text-2xl font-bold text-gray-900 mt-12 mb-4">
+      <h2
+        id="what-live"
+        className="text-2xl font-bold text-gray-900 mt-12 mb-4 scroll-mt-24"
+      >
         What Is a Live Watch Party?
       </h2>
       <p className="text-gray-700 leading-relaxed mb-6">
@@ -67,7 +82,10 @@ export default function AsyncVsLivePage() {
         zones.
       </p>
 
-      <h2 className="text-2xl font-bold text-gray-900 mt-12 mb-4">
+      <h2
+        id="what-async"
+        className="text-2xl font-bold text-gray-900 mt-12 mb-4 scroll-mt-24"
+      >
         What Is Asynchronous Watching?
       </h2>
       <p className="text-gray-700 leading-relaxed mb-6">
@@ -78,7 +96,10 @@ export default function AsyncVsLivePage() {
         reads at their own pace, then discusses.
       </p>
 
-      <h2 className="text-2xl font-bold text-gray-900 mt-12 mb-4">
+      <h2
+        id="comparison"
+        className="text-2xl font-bold text-gray-900 mt-12 mb-4 scroll-mt-24"
+      >
         Comparison
       </h2>
       <div className="overflow-x-auto mb-8">
@@ -101,7 +122,10 @@ export default function AsyncVsLivePage() {
         </table>
       </div>
 
-      <h2 className="text-2xl font-bold text-gray-900 mt-12 mb-4">
+      <h2
+        id="when-live"
+        className="text-2xl font-bold text-gray-900 mt-12 mb-4 scroll-mt-24"
+      >
         When to Go Live
       </h2>
       <ul className="list-disc pl-6 space-y-2 text-gray-700 mb-6">
@@ -110,7 +134,10 @@ export default function AsyncVsLivePage() {
         <li>Small group that can easily coordinate schedules.</li>
       </ul>
 
-      <h2 className="text-2xl font-bold text-gray-900 mt-12 mb-4">
+      <h2
+        id="when-async"
+        className="text-2xl font-bold text-gray-900 mt-12 mb-4 scroll-mt-24"
+      >
         When to Go Async
       </h2>
       <ul className="list-disc pl-6 space-y-2 text-gray-700 mb-6">
@@ -120,7 +147,10 @@ export default function AsyncVsLivePage() {
         <li>Your group has more than 3-4 people, making scheduling hard.</li>
       </ul>
 
-      <h2 className="text-2xl font-bold text-gray-900 mt-12 mb-4">
+      <h2
+        id="tools"
+        className="text-2xl font-bold text-gray-900 mt-12 mb-4 scroll-mt-24"
+      >
         Tools for Each Approach
       </h2>
       <ul className="list-disc pl-6 space-y-2 text-gray-700 mb-8">
@@ -129,7 +159,10 @@ export default function AsyncVsLivePage() {
         <li><strong>Both:</strong> AniDachi supports live sync and async in the same watchroom</li>
       </ul>
 
-      <h2 className="text-2xl font-bold text-gray-900 mt-12 mb-4">
+      <h2
+        id="related"
+        className="text-2xl font-bold text-gray-900 mt-12 mb-4 scroll-mt-24"
+      >
         Related
       </h2>
       <ul className="space-y-2 text-purple-600">

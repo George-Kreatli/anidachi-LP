@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import Link from "next/link";
-import { SeoPageLayout } from "@/components/seo-page-layout";
+import { SeoPageLayout, type TocHeading } from "@/components/seo-page-layout";
 
 export const metadata: Metadata = {
   title: "Best Crunchyroll Watch Party Chrome Extensions (2026)",
@@ -33,6 +33,16 @@ const faq = [
   },
 ];
 
+const tocHeadings: TocHeading[] = [
+  { id: "anidachi", label: "AniDachi", level: 2 },
+  { id: "cr-party", label: "Crunchyroll Party", level: 2 },
+  { id: "teleparty", label: "Teleparty", level: 2 },
+  { id: "roll-together", label: "Roll Together & others", level: 2 },
+  { id: "comparison-table", label: "Quick comparison", level: 2 },
+  { id: "related", label: "Related guides", level: 2 },
+  { id: "faq", label: "FAQ", level: 2 },
+];
+
 export default function CrunchyrollExtensionsPage() {
   return (
     <SeoPageLayout
@@ -45,8 +55,9 @@ export default function CrunchyrollExtensionsPage() {
       description="Detailed comparison of Chrome extensions for watching Crunchyroll with friends."
       url="/guides/crunchyroll-watch-party-chrome-extension"
       datePublished="2026-04-23"
-      dateModified="2026-04-23"
+      dateModified="2026-04-24"
       faq={faq}
+      headings={tocHeadings}
     >
       <h1 className="text-4xl font-bold text-gray-900 mb-6">
         Best Crunchyroll Watch Party Chrome Extensions in 2026
@@ -60,7 +71,10 @@ export default function CrunchyrollExtensionsPage() {
         We tested and compared every major option. Here&apos;s what we found.
       </p>
 
-      <h2 className="text-2xl font-bold text-gray-900 mt-12 mb-4">
+      <h2
+        id="anidachi"
+        className="text-2xl font-bold text-gray-900 mt-12 mb-4 scroll-mt-24"
+      >
         1. AniDachi — Best for Async Group Watching
       </h2>
       <p className="text-gray-700 leading-relaxed mb-4">
@@ -77,7 +91,10 @@ export default function CrunchyrollExtensionsPage() {
         <li>Real-time and asynchronous chat</li>
       </ul>
 
-      <h2 className="text-2xl font-bold text-gray-900 mt-12 mb-4">
+      <h2
+        id="cr-party"
+        className="text-2xl font-bold text-gray-900 mt-12 mb-4 scroll-mt-24"
+      >
         2. Crunchyroll Party — Best Free Option
       </h2>
       <p className="text-gray-700 leading-relaxed mb-4">
@@ -87,7 +104,10 @@ export default function CrunchyrollExtensionsPage() {
         and auto-detection.
       </p>
 
-      <h2 className="text-2xl font-bold text-gray-900 mt-12 mb-4">
+      <h2
+        id="teleparty"
+        className="text-2xl font-bold text-gray-900 mt-12 mb-4 scroll-mt-24"
+      >
         3. Teleparty (Netflix Party) — Best for Multi-Platform
       </h2>
       <p className="text-gray-700 leading-relaxed mb-4">
@@ -97,7 +117,10 @@ export default function CrunchyrollExtensionsPage() {
         chat.
       </p>
 
-      <h2 className="text-2xl font-bold text-gray-900 mt-12 mb-4">
+      <h2
+        id="roll-together"
+        className="text-2xl font-bold text-gray-900 mt-12 mb-4 scroll-mt-24"
+      >
         4. Roll Together &amp; Anime Watch Parties
       </h2>
       <p className="text-gray-700 leading-relaxed mb-4">
@@ -107,7 +130,10 @@ export default function CrunchyrollExtensionsPage() {
         bases and fewer features.
       </p>
 
-      <h2 className="text-2xl font-bold text-gray-900 mt-12 mb-4">
+      <h2
+        id="comparison-table"
+        className="text-2xl font-bold text-gray-900 mt-12 mb-4 scroll-mt-24"
+      >
         Quick Comparison
       </h2>
       <div className="overflow-x-auto mb-8">
@@ -130,7 +156,10 @@ export default function CrunchyrollExtensionsPage() {
         </table>
       </div>
 
-      <h2 className="text-2xl font-bold text-gray-900 mt-12 mb-4">
+      <h2
+        id="related"
+        className="text-2xl font-bold text-gray-900 mt-12 mb-4 scroll-mt-24"
+      >
         Related Guides
       </h2>
       <ul className="space-y-2 text-purple-600">

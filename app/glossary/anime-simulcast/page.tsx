@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import Link from "next/link";
-import { SeoPageLayout } from "@/components/seo-page-layout";
+import { SeoPageLayout, type TocHeading } from "@/components/seo-page-layout";
 
 export const metadata: Metadata = {
   title: "What Is an Anime Simulcast? — Glossary",
@@ -22,6 +22,13 @@ const faq = [
   },
 ];
 
+const tocHeadings: TocHeading[] = [
+  { id: "watch-parties", label: "Why simulcasts matter", level: 2 },
+  { id: "where", label: "Where to watch", level: 2 },
+  { id: "related", label: "Related", level: 2 },
+  { id: "faq", label: "FAQ", level: 2 },
+];
+
 export default function AnimeSimulcastGlossaryPage() {
   return (
     <SeoPageLayout
@@ -34,8 +41,9 @@ export default function AnimeSimulcastGlossaryPage() {
       description="Definition of anime simulcasts and how they work."
       url="/glossary/anime-simulcast"
       datePublished="2026-04-23"
-      dateModified="2026-04-23"
+      dateModified="2026-04-24"
       faq={faq}
+      headings={tocHeadings}
     >
       <h1 className="text-4xl font-bold text-gray-900 mb-6">
         What Is an Anime Simulcast?
@@ -51,7 +59,10 @@ export default function AnimeSimulcastGlossaryPage() {
         without waiting weeks for localization.
       </p>
 
-      <h2 className="text-2xl font-bold text-gray-900 mt-10 mb-4">
+      <h2
+        id="watch-parties"
+        className="text-2xl font-bold text-gray-900 mt-10 mb-4 scroll-mt-24"
+      >
         Why Simulcasts Matter for Watch Parties
       </h2>
       <p className="text-gray-700 leading-relaxed mb-6">
@@ -61,7 +72,10 @@ export default function AnimeSimulcastGlossaryPage() {
         shared premiere experience every week.
       </p>
 
-      <h2 className="text-2xl font-bold text-gray-900 mt-10 mb-4">
+      <h2
+        id="where"
+        className="text-2xl font-bold text-gray-900 mt-10 mb-4 scroll-mt-24"
+      >
         Where to Watch Simulcasts
       </h2>
       <p className="text-gray-700 leading-relaxed mb-6">
@@ -70,7 +84,10 @@ export default function AnimeSimulcastGlossaryPage() {
         include HIDIVE and Netflix (for select titles with delayed availability).
       </p>
 
-      <h2 className="text-2xl font-bold text-gray-900 mt-10 mb-4">
+      <h2
+        id="related"
+        className="text-2xl font-bold text-gray-900 mt-10 mb-4 scroll-mt-24"
+      >
         Related
       </h2>
       <ul className="space-y-2 text-purple-600">

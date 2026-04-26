@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import Link from "next/link";
-import { SeoPageLayout } from "@/components/seo-page-layout";
+import { SeoPageLayout, type TocHeading } from "@/components/seo-page-layout";
 
 export const metadata: Metadata = {
   title: "Best Anime to Watch with Friends (2026) — Top Picks for Group Watching",
@@ -13,12 +13,49 @@ const faq = [
   {
     question: "What is the best anime to watch with friends for the first time?",
     answer:
-      "Attack on Titan, Demon Slayer, and Spy x Family are universally loved first-watch picks. They have broad appeal, strong hooks in the first episode, and plenty to discuss.",
+      "Attack on Titan, Demon Slayer, and Spy x Family are widely loved first-watch picks. They have broad appeal, strong hooks in the first episode, and plenty to discuss.",
   },
   {
     question: "What anime is best for a large group watch party?",
     answer:
-      "Comedy anime like KonoSuba, Spy x Family, and One Punch Man work well for large groups because they don't require close attention to follow and keep everyone laughing.",
+      "Comedy anime like KonoSuba, Spy x Family, and One Punch Man work well for large groups because they do not require perfect attention to follow and keep the room laughing.",
+  },
+  {
+    question: "How do I host a watch party for one of these shows?",
+    answer:
+      "Use AniDachi to create a Crunchyroll watchroom, share the link, and decide as a group whether you will watch live or async. Everyone needs their own Crunchyroll access to stream the video.",
+  },
+];
+
+const headings: TocHeading[] = [
+  { id: "reactions", label: "Reactions & cliffhangers", level: 2 },
+  { id: "comedy", label: "Comedy", level: 2 },
+  { id: "discussion", label: "Theory & discussion", level: 2 },
+  { id: "marathon", label: "Long marathons", level: 2 },
+  { id: "related", label: "Related", level: 2 },
+  { id: "faq", label: "FAQ", level: 2 },
+];
+
+const itemList = [
+  {
+    name: "Best for epic reactions & cliffhangers",
+    url: "/guides/best-anime-to-watch-with-friends#reactions",
+    position: 1,
+  },
+  {
+    name: "Best for laughing together",
+    url: "/guides/best-anime-to-watch-with-friends#comedy",
+    position: 2,
+  },
+  {
+    name: "Best for theory-crafting & discussion",
+    url: "/guides/best-anime-to-watch-with-friends#discussion",
+    position: 3,
+  },
+  {
+    name: "Best for long marathons",
+    url: "/guides/best-anime-to-watch-with-friends#marathon",
+    position: 4,
   },
 ];
 
@@ -30,15 +67,18 @@ export default function BestAnimeWithFriendsPage() {
         { name: "Guides", url: "/watch-anime-together" },
         { name: "Best Anime with Friends", url: "/guides/best-anime-to-watch-with-friends" },
       ]}
-      title="Best Anime to Watch with Friends"
+      title="15 Best Anime to Watch with Friends in 2026"
       description="Top anime picks for group watching sessions."
       url="/guides/best-anime-to-watch-with-friends"
       datePublished="2026-04-23"
-      dateModified="2026-04-23"
+      dateModified="2026-04-24"
       faq={faq}
+      headings={headings}
+      itemList={itemList}
+      aboveFoldCta
     >
       <h1 className="text-4xl font-bold text-gray-900 mb-6">
-        Best Anime to Watch with Friends in 2026
+        15 Best Anime to Watch with Friends in 2026
       </h1>
 
       <p className="text-xl text-gray-700 leading-relaxed mb-8">
@@ -47,10 +87,13 @@ export default function BestAnimeWithFriendsPage() {
           episodes, and moments that demand real-time reactions.
         </strong>{" "}
         Here are our top picks sorted by what makes them great for watching
-        together.
+        together. Open any title in a watchroom and sync with your group.
       </p>
 
-      <h2 className="text-2xl font-bold text-gray-900 mt-12 mb-4">
+      <h2
+        id="reactions"
+        className="text-2xl font-bold text-gray-900 mt-12 mb-4 scroll-mt-24"
+      >
         Best for Epic Reactions &amp; Cliffhangers
       </h2>
       <ul className="space-y-3 text-gray-700 mb-8">
@@ -60,7 +103,10 @@ export default function BestAnimeWithFriendsPage() {
         <li><strong><Link href="/watch/chainsaw-man-with-friends" className="text-purple-600 hover:underline">Chainsaw Man</Link></strong> — Wild, unpredictable, and endlessly meme-able.</li>
       </ul>
 
-      <h2 className="text-2xl font-bold text-gray-900 mt-12 mb-4">
+      <h2
+        id="comedy"
+        className="text-2xl font-bold text-gray-900 mt-12 mb-4 scroll-mt-24"
+      >
         Best for Laughing Together
       </h2>
       <ul className="space-y-3 text-gray-700 mb-8">
@@ -70,7 +116,10 @@ export default function BestAnimeWithFriendsPage() {
         <li><strong><Link href="/watch/mob-psycho-100-with-friends" className="text-purple-600 hover:underline">Mob Psycho 100</Link></strong> — Funny, wholesome, and visually stunning.</li>
       </ul>
 
-      <h2 className="text-2xl font-bold text-gray-900 mt-12 mb-4">
+      <h2
+        id="discussion"
+        className="text-2xl font-bold text-gray-900 mt-12 mb-4 scroll-mt-24"
+      >
         Best for Theory-Crafting &amp; Discussion
       </h2>
       <ul className="space-y-3 text-gray-700 mb-8">
@@ -80,7 +129,10 @@ export default function BestAnimeWithFriendsPage() {
         <li><strong><Link href="/watch/frieren-beyond-journeys-end-with-friends" className="text-purple-600 hover:underline">Frieren</Link></strong> — Slow, emotional, and deeply rewarding. Perfect for thoughtful groups.</li>
       </ul>
 
-      <h2 className="text-2xl font-bold text-gray-900 mt-12 mb-4">
+      <h2
+        id="marathon"
+        className="text-2xl font-bold text-gray-900 mt-12 mb-4 scroll-mt-24"
+      >
         Best for Long Marathons
       </h2>
       <ul className="space-y-3 text-gray-700 mb-8">
@@ -89,7 +141,10 @@ export default function BestAnimeWithFriendsPage() {
         <li><strong><Link href="/watch/hunter-x-hunter-with-friends" className="text-purple-600 hover:underline">Hunter x Hunter</Link></strong> — Each arc is a different genre. Always something new to discuss.</li>
       </ul>
 
-      <h2 className="text-2xl font-bold text-gray-900 mt-12 mb-4">
+      <h2
+        id="related"
+        className="text-2xl font-bold text-gray-900 mt-12 mb-4 scroll-mt-24"
+      >
         Related
       </h2>
       <ul className="space-y-2 text-purple-600">

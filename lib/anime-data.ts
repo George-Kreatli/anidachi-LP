@@ -499,4 +499,14 @@ export const animeList: AnimeEntry[] = [
     genres: ["Mystery", "Thriller", "Drama"],
     related: ["steins-gate", "death-note", "tokyo-revengers"],
   },
+  {
+    slug: "hells-paradise",
+    title: "Hell's Paradise: Jigokuraku",
+    japaneseTitle: "Jigokuraku",
+    synopsis:
+      "Death-row ninja Gabimaru the Hollow is sent to a mysterious island to retrieve the elixir of immortality. Brutal fights, grotesque monsters, and a ticking clock make every episode a pressure cooker—perfect for a watchroom that loves hype and debate.",
+    episodes: "13 episodes (Season 1)",
+    genres: ["Action", "Supernatural", "Historical"],
+    related: ["chainsaw-man", "jujutsu-kaisen", "demon-slayer"],
+  },
 ];

@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import Link from "next/link";
-import { SeoPageLayout } from "@/components/seo-page-layout";
+import { SeoPageLayout, type TocHeading } from "@/components/seo-page-layout";
 
 export const metadata: Metadata = {
   title: "What Is a Watchroom? — Anime Watch Party Glossary",
@@ -27,6 +27,13 @@ const faq = [
   },
 ];
 
+const tocHeadings: TocHeading[] = [
+  { id: "how-anidachi", label: "How it works in AniDachi", level: 2 },
+  { id: "vs-watch-party", label: "Watchroom vs watch party", level: 2 },
+  { id: "related", label: "Related", level: 2 },
+  { id: "faq", label: "FAQ", level: 2 },
+];
+
 export default function WatchroomGlossaryPage() {
   return (
     <SeoPageLayout
@@ -39,8 +46,9 @@ export default function WatchroomGlossaryPage() {
       description="Definition and explanation of anime watchrooms."
       url="/glossary/watchroom"
       datePublished="2026-04-23"
-      dateModified="2026-04-23"
+      dateModified="2026-04-24"
       faq={faq}
+      headings={tocHeadings}
     >
       <h1 className="text-4xl font-bold text-gray-900 mb-6">
         What Is a Watchroom?
@@ -56,7 +64,10 @@ export default function WatchroomGlossaryPage() {
         and lets you leave reactions on specific episodes.
       </p>
 
-      <h2 className="text-2xl font-bold text-gray-900 mt-10 mb-4">
+      <h2
+        id="how-anidachi"
+        className="text-2xl font-bold text-gray-900 mt-10 mb-4 scroll-mt-24"
+      >
         How Watchrooms Work in AniDachi
       </h2>
       <p className="text-gray-700 leading-relaxed mb-4">
@@ -67,7 +78,10 @@ export default function WatchroomGlossaryPage() {
         and can mark episodes as watched independently.
       </p>
 
-      <h2 className="text-2xl font-bold text-gray-900 mt-10 mb-4">
+      <h2
+        id="vs-watch-party"
+        className="text-2xl font-bold text-gray-900 mt-10 mb-4 scroll-mt-24"
+      >
         Watchroom vs Watch Party
       </h2>
       <p className="text-gray-700 leading-relaxed mb-4">
@@ -77,7 +91,10 @@ export default function WatchroomGlossaryPage() {
         designed for ongoing series, not just one-off sessions.
       </p>
 
-      <h2 className="text-2xl font-bold text-gray-900 mt-10 mb-4">
+      <h2
+        id="related"
+        className="text-2xl font-bold text-gray-900 mt-10 mb-4 scroll-mt-24"
+      >
         Related
       </h2>
       <ul className="space-y-2 text-purple-600">

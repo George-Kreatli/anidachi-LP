@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import Link from "next/link";
-import { SeoPageLayout } from "@/components/seo-page-layout";
+import { SeoPageLayout, type TocHeading } from "@/components/seo-page-layout";
 
 export const metadata: Metadata = {
   title: "What Is Asynchronous Anime Watching? — Glossary",
@@ -27,6 +27,13 @@ const faq = [
   },
 ];
 
+const tocHeadings: TocHeading[] = [
+  { id: "how-it-works", label: "How it works", level: 2 },
+  { id: "why-growing", label: "Why it is growing", level: 2 },
+  { id: "related", label: "Related", level: 2 },
+  { id: "faq", label: "FAQ", level: 2 },
+];
+
 export default function AsyncWatchingGlossaryPage() {
   return (
     <SeoPageLayout
@@ -39,8 +46,9 @@ export default function AsyncWatchingGlossaryPage() {
       description="How async anime watching works and why it's growing."
       url="/glossary/asynchronous-watching"
       datePublished="2026-04-23"
-      dateModified="2026-04-23"
+      dateModified="2026-04-24"
       faq={faq}
+      headings={tocHeadings}
     >
       <h1 className="text-4xl font-bold text-gray-900 mb-6">
         What Is Asynchronous Anime Watching?
@@ -56,7 +64,10 @@ export default function AsyncWatchingGlossaryPage() {
         then discusses.
       </p>
 
-      <h2 className="text-2xl font-bold text-gray-900 mt-10 mb-4">
+      <h2
+        id="how-it-works"
+        className="text-2xl font-bold text-gray-900 mt-10 mb-4 scroll-mt-24"
+      >
         How Async Watching Works
       </h2>
       <ol className="list-decimal pl-6 space-y-2 text-gray-700 mb-6">
@@ -67,7 +78,10 @@ export default function AsyncWatchingGlossaryPage() {
         <li>Friends see those reactions when they watch the same episode later.</li>
       </ol>
 
-      <h2 className="text-2xl font-bold text-gray-900 mt-10 mb-4">
+      <h2
+        id="why-growing"
+        className="text-2xl font-bold text-gray-900 mt-10 mb-4 scroll-mt-24"
+      >
         Why Async Is Growing
       </h2>
       <p className="text-gray-700 leading-relaxed mb-6">
@@ -77,7 +91,10 @@ export default function AsyncWatchingGlossaryPage() {
         where different people are at different points.
       </p>
 
-      <h2 className="text-2xl font-bold text-gray-900 mt-10 mb-4">
+      <h2
+        id="related"
+        className="text-2xl font-bold text-gray-900 mt-10 mb-4 scroll-mt-24"
+      >
         Related
       </h2>
       <ul className="space-y-2 text-purple-600">

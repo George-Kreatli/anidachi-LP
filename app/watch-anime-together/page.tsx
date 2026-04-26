@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import Link from "next/link";
-import { SeoPageLayout } from "@/components/seo-page-layout";
+import { SeoPageLayout, type TocHeading } from "@/components/seo-page-layout";
 
 export const metadata: Metadata = {
   title: "Watch Anime Together Online — The Complete Guide (2026)",
@@ -43,6 +43,18 @@ const faq = [
   },
 ];
 
+const tocHeadings: TocHeading[] = [
+  { id: "why-watch", label: "Why watch anime together?", level: 2 },
+  { id: "methods-heading", label: "Methods", level: 2 },
+  { id: "method-extensions", label: "Chrome extensions", level: 3 },
+  { id: "method-discord", label: "Discord", level: 3 },
+  { id: "method-in-person", label: "In-person", level: 3 },
+  { id: "live-vs-async", label: "Live vs async", level: 2 },
+  { id: "popular-anime", label: "Popular picks", level: 2 },
+  { id: "all-guides", label: "All guides", level: 2 },
+  { id: "faq", label: "FAQ", level: 2 },
+];
+
 export default function WatchAnimeTogetherPage() {
   return (
     <SeoPageLayout
@@ -54,8 +66,9 @@ export default function WatchAnimeTogetherPage() {
       description="Everything you need to watch anime with friends online."
       url="/watch-anime-together"
       datePublished="2026-04-23"
-      dateModified="2026-04-23"
+      dateModified="2026-04-24"
       faq={faq}
+      headings={tocHeadings}
     >
       <h1 className="text-4xl md:text-5xl font-bold text-gray-900 mb-6">
         Watch Anime Together Online
@@ -72,7 +85,10 @@ export default function WatchAnimeTogetherPage() {
         every method, tool, and tip.
       </p>
 
-      <h2 className="text-2xl font-bold text-gray-900 mt-12 mb-4">
+      <h2
+        id="why-watch"
+        className="text-2xl font-bold text-gray-900 mt-12 mb-4 scroll-mt-24"
+      >
         Why Watch Anime Together?
       </h2>
       <p className="text-gray-700 leading-relaxed mb-6">
@@ -84,11 +100,17 @@ export default function WatchAnimeTogetherPage() {
         friend&quot; — 友達 (tomodachi) + アニメ (anime).
       </p>
 
-      <h2 className="text-2xl font-bold text-gray-900 mt-12 mb-4">
+      <h2
+        className="text-2xl font-bold text-gray-900 mt-12 mb-4 scroll-mt-24"
+        id="methods-heading"
+      >
         Methods for Watching Anime Together
       </h2>
 
-      <h3 className="text-xl font-semibold text-gray-900 mt-8 mb-3">
+      <h3
+        id="method-extensions"
+        className="text-xl font-semibold text-gray-900 mt-8 mb-3 scroll-mt-24"
+      >
         1. Chrome Extensions (Best Quality &amp; Features)
       </h3>
       <p className="text-gray-700 leading-relaxed mb-4">
@@ -98,7 +120,10 @@ export default function WatchAnimeTogetherPage() {
         — watch at different times and still share the experience.
       </p>
 
-      <h3 className="text-xl font-semibold text-gray-900 mt-8 mb-3">
+      <h3
+        id="method-discord"
+        className="text-xl font-semibold text-gray-900 mt-8 mb-3 scroll-mt-24"
+      >
         2. Discord Screen Sharing (Free &amp; Easy)
       </h3>
       <p className="text-gray-700 leading-relaxed mb-4">
@@ -107,7 +132,10 @@ export default function WatchAnimeTogetherPage() {
         there&apos;s no automatic sync. Best for casual, impromptu sessions.
       </p>
 
-      <h3 className="text-xl font-semibold text-gray-900 mt-8 mb-3">
+      <h3
+        id="method-in-person"
+        className="text-xl font-semibold text-gray-900 mt-8 mb-3 scroll-mt-24"
+      >
         3. In-Person Watch Parties
       </h3>
       <p className="text-gray-700 leading-relaxed mb-6">
@@ -122,7 +150,10 @@ export default function WatchAnimeTogetherPage() {
         for inspiration.
       </p>
 
-      <h2 className="text-2xl font-bold text-gray-900 mt-12 mb-4">
+      <h2
+        id="live-vs-async"
+        className="text-2xl font-bold text-gray-900 mt-12 mb-4 scroll-mt-24"
+      >
         Live vs Asynchronous Watch Parties
       </h2>
       <p className="text-gray-700 leading-relaxed mb-6">
@@ -140,7 +171,10 @@ export default function WatchAnimeTogetherPage() {
         .
       </p>
 
-      <h2 className="text-2xl font-bold text-gray-900 mt-12 mb-4">
+      <h2
+        id="popular-anime"
+        className="text-2xl font-bold text-gray-900 mt-12 mb-4 scroll-mt-24"
+      >
         Popular Anime to Watch Together
       </h2>
       <p className="text-gray-700 leading-relaxed mb-4">
@@ -155,9 +189,13 @@ export default function WatchAnimeTogetherPage() {
         <li><Link href="/watch/chainsaw-man-with-friends" className="hover:underline">Chainsaw Man</Link></li>
         <li><Link href="/watch/solo-leveling-with-friends" className="hover:underline">Solo Leveling</Link></li>
         <li><Link href="/watch/frieren-beyond-journeys-end-with-friends" className="hover:underline">Frieren</Link></li>
+        <li><Link href="/watch/hells-paradise-with-friends" className="hover:underline">Hell&apos;s Paradise</Link></li>
       </ul>
 
-      <h2 className="text-2xl font-bold text-gray-900 mt-12 mb-4">
+      <h2
+        id="all-guides"
+        className="text-2xl font-bold text-gray-900 mt-12 mb-4 scroll-mt-24"
+      >
         All Guides
       </h2>
       <ul className="space-y-2 text-purple-600">

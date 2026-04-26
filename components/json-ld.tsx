@@ -178,3 +178,27 @@ export function ArticleJsonLd({
   };
   return <JsonLd data={data} />;
 }
+
+
+export function ItemListJsonLd({
+  name,
+  items,
+}: {
+  name: string;
+  items: { name: string; url: string; position: number }[];
+}) {
+  const data = {
+    "@context": "https://schema.org",
+    "@type": "ItemList",
+    name,
+    numberOfItems: items.length,
+    itemListElement: items.map((it) => ({
+      "@type": "ListItem",
+      position: it.position,
+      name: it.name,
+      item: it.url.startsWith("http") ? it.url : `${SITE_URL}${it.url}`,
+    })),
+  };
+  return <JsonLd data={data} />;
+}
+

@@ -36,13 +36,19 @@ app/
   api/                        # API routes (Stripe, auth, media)
 
 components/                   # Shared React components
+  table-of-contents.tsx       # In-page “On this page” (via SeoPageLayout)
 lib/                          # Utilities, data, analytics
   anime-data.ts               # Anime title seed for programmatic pages
+  jikan.ts                    # MyAnimeList data via Jikan API (revalidated 24h)
+  anime-mal-ids.ts            # MAL id per anime slug (for Jikan on /watch/ pages)
+  jikan-for-watch-page.ts     # Cached Jikan fetch + related-title resolution
   home-faq.ts                 # FAQ data shared between component + JSON-LD
   gtag.ts                     # GA4 event helper
 ```
 
 ## SEO / Content
+
+Authoritative rules for new pages (templates, URLs, Jikan, TOC, checklist): **[docs/seo-content-guidelines.md](docs/seo-content-guidelines.md)**.
 
 The site uses a hub-and-spoke content model:
 

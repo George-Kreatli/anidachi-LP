@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import Link from "next/link";
-import { SeoPageLayout } from "@/components/seo-page-layout";
+import { SeoPageLayout, type TocHeading } from "@/components/seo-page-layout";
 
 export const metadata: Metadata = {
   title: "How to Watch Crunchyroll with Friends (2026 Guide)",
@@ -32,6 +32,15 @@ const faq = [
   },
 ];
 
+const tocHeadings: TocHeading[] = [
+  { id: "method-anidachi", label: "Method 1: AniDachi", level: 2 },
+  { id: "method-discord", label: "Method 2: Discord", level: 2 },
+  { id: "method-cr-party", label: "Method 3: Crunchyroll Party", level: 2 },
+  { id: "which-method", label: "Which method to choose", level: 2 },
+  { id: "related", label: "Related guides", level: 2 },
+  { id: "faq", label: "FAQ", level: 2 },
+];
+
 export default function HowToWatchWithFriendsPage() {
   return (
     <SeoPageLayout
@@ -44,8 +53,9 @@ export default function HowToWatchWithFriendsPage() {
       description="Every method to watch Crunchyroll together, compared and explained."
       url="/guides/how-to-watch-crunchyroll-with-friends"
       datePublished="2026-04-23"
-      dateModified="2026-04-23"
+      dateModified="2026-04-24"
       faq={faq}
+      headings={tocHeadings}
     >
       <h1 className="text-4xl font-bold text-gray-900 mb-6">
         How to Watch Crunchyroll with Friends in 2026
@@ -61,7 +71,10 @@ export default function HowToWatchWithFriendsPage() {
         screen sharing to premium async watchrooms.
       </p>
 
-      <h2 className="text-2xl font-bold text-gray-900 mt-12 mb-4">
+      <h2
+        id="method-anidachi"
+        className="text-2xl font-bold text-gray-900 mt-12 mb-4 scroll-mt-24"
+      >
         Method 1: AniDachi Chrome Extension (Best for Groups)
       </h2>
       <p className="text-gray-700 leading-relaxed mb-4">
@@ -78,7 +91,10 @@ export default function HowToWatchWithFriendsPage() {
         <li>Watch together with synced playback and live chat.</li>
       </ol>
 
-      <h2 className="text-2xl font-bold text-gray-900 mt-12 mb-4">
+      <h2
+        id="method-discord"
+        className="text-2xl font-bold text-gray-900 mt-12 mb-4 scroll-mt-24"
+      >
         Method 2: Discord Screen Sharing (Free, Quick)
       </h2>
       <p className="text-gray-700 leading-relaxed mb-4">
@@ -89,7 +105,10 @@ export default function HowToWatchWithFriendsPage() {
         server.
       </p>
 
-      <h2 className="text-2xl font-bold text-gray-900 mt-12 mb-4">
+      <h2
+        id="method-cr-party"
+        className="text-2xl font-bold text-gray-900 mt-12 mb-4 scroll-mt-24"
+      >
         Method 3: Crunchyroll Party Extension (Free, Live Sync)
       </h2>
       <p className="text-gray-700 leading-relaxed mb-4">
@@ -99,7 +118,10 @@ export default function HowToWatchWithFriendsPage() {
         progress tracking, or auto-detection.
       </p>
 
-      <h2 className="text-2xl font-bold text-gray-900 mt-12 mb-4">
+      <h2
+        id="which-method"
+        className="text-2xl font-bold text-gray-900 mt-12 mb-4 scroll-mt-24"
+      >
         Which Method Should You Choose?
       </h2>
       <ul className="list-disc pl-6 space-y-2 text-gray-700 mb-8">
@@ -108,7 +130,10 @@ export default function HowToWatchWithFriendsPage() {
         <li><strong>For free live sync:</strong> Crunchyroll Party</li>
       </ul>
 
-      <h2 className="text-2xl font-bold text-gray-900 mt-12 mb-4">
+      <h2
+        id="related"
+        className="text-2xl font-bold text-gray-900 mt-12 mb-4 scroll-mt-24"
+      >
         Related Guides
       </h2>
       <ul className="space-y-2 text-purple-600">
