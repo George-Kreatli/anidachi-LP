@@ -1,5 +1,6 @@
 import Link from "next/link";
 import Image from "next/image";
+import { NavPricingLink } from "@/components/nav-pricing-link";
 
 export function NavBar() {
   return (
@@ -31,12 +32,7 @@ export function NavBar() {
             </Link>
           </li>
           <li>
-            <Link
-              href="/#pricing"
-              className="text-purple-100 hover:text-white transition-colors"
-            >
-              Pricing
-            </Link>
+            <NavPricingLink />
           </li>
           <li>
             <Link

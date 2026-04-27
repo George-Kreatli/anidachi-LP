@@ -1,3 +1,4 @@
+import type { ReactNode } from "react";
 import Link from "next/link";
 import { Footer } from "@/components/footer";
 import { FAQSection, type FAQItem } from "@/components/faq-section";
@@ -8,8 +9,9 @@ import {
   ItemListJsonLd,
 } from "@/components/json-ld";
 import { TableOfContents, type TocHeading } from "@/components/table-of-contents";
-import { Button } from "@/components/ui/button";
-import { ArrowRight } from "lucide-react";
+import { PrimaryCheckoutCta } from "@/components/primary-checkout-cta";
+import type { PageTemplateId } from "@/lib/conversion-events";
+import { inferPageTemplateFromPath } from "@/lib/conversion-events";
 
 export type { TocHeading };
 
@@ -24,32 +26,11 @@ export interface SeoPageLayoutProps {
   headings?: TocHeading[];
   itemList?: { name: string; url: string; position: number }[];
   aboveFoldCta?: boolean;
+  /** Override autodetected template (from `url`) for conversion analytics + CTA copy */
+  conversionTemplate?: PageTemplateId;
+  /** Optional CTA or promo block between main content and bottom checkout CTA (e.g. after intro on long guides) */
+  midContentSlot?: ReactNode;
   children: React.ReactNode;
-}
-
-function CtaBlock({ className = "" }: { className?: string }) {
-  return (
-    <div
-      className={`mt-12 p-8 bg-gradient-to-br from-purple-50 to-blue-50 rounded-xl text-center ${className}`.trim()}
-    >
-      <h3 className="text-2xl font-bold text-gray-900 mb-3">
-        Ready to Watch Anime Together?
-      </h3>
-      <p className="text-gray-600 mb-6">
-        Create your first watchroom in under two minutes.
-      </p>
-      <Button
-        size="lg"
-        className="bg-purple-600 hover:bg-purple-700 text-white"
-        asChild
-      >
-        <Link href="/#pricing">
-          Get Started
-          <ArrowRight className="ml-2 h-5 w-5" aria-hidden="true" />
-        </Link>
-      </Button>
-    </div>
-  );
 }
 
 export function SeoPageLayout({
@@ -63,15 +44,32 @@ export function SeoPageLayout({
   headings,
   itemList,
   aboveFoldCta,
+  conversionTemplate,
+  midContentSlot,
   children,
 }: SeoPageLayoutProps) {
   const hasToc = headings && headings.length > 0;
+  const pageTemplate = conversionTemplate ?? inferPageTemplateFromPath(url);
 
   const articleBody = (
     <>
-      {aboveFoldCta && <CtaBlock className="!mt-0 mb-10" />}
+      {aboveFoldCta && (
+        <PrimaryCheckoutCta
+          pagePath={url}
+          pageTemplate={pageTemplate}
+          placement="content_above_fold"
+          className="!mt-0 mb-10"
+        />
+      )}
       {children}
-      <CtaBlock />
+      {midContentSlot}
+      <div className="mt-12">
+        <PrimaryCheckoutCta
+          pagePath={url}
+          pageTemplate={pageTemplate}
+          placement="content_bottom"
+        />
+      </div>
     </>
   );
 

@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { SeoPageLayout, type TocHeading } from "@/components/seo-page-layout";
+import { getGuideLinks } from "@/lib/guide-links";
 
 export const metadata: Metadata = {
   title: "Asynchronous vs Live Anime Watch Parties — Which Is Better?",
@@ -39,6 +40,11 @@ const tocHeadings: TocHeading[] = [
 ];
 
 export default function AsyncVsLivePage() {
+  const relatedGuideLinks = getGuideLinks({
+    includeTags: ["how-to-core", "time-zones", "long-distance", "spoilers"],
+    limit: 4,
+  });
+
   return (
     <SeoPageLayout
       breadcrumbs={[
@@ -169,6 +175,13 @@ export default function AsyncVsLivePage() {
         <li><Link href="/watch-anime-together" className="hover:underline">Watch Anime Together (Complete Guide)</Link></li>
         <li><Link href="/watch-crunchyroll-together" className="hover:underline">Watch Crunchyroll Together</Link></li>
         <li><Link href="/glossary/asynchronous-watching" className="hover:underline">What Is Asynchronous Watching?</Link></li>
+        {relatedGuideLinks.map((guide) => (
+          <li key={guide.href}>
+            <Link href={guide.href} className="hover:underline">
+              {guide.label}
+            </Link>
+          </li>
+        ))}
       </ul>
     </SeoPageLayout>
   );

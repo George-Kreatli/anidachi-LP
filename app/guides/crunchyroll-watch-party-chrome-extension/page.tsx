@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { SeoPageLayout, type TocHeading } from "@/components/seo-page-layout";
+import { getGuideLinks } from "@/lib/guide-links";
 
 export const metadata: Metadata = {
   title: "Best Crunchyroll Watch Party Chrome Extensions (2026)",
@@ -44,6 +45,11 @@ const tocHeadings: TocHeading[] = [
 ];
 
 export default function CrunchyrollExtensionsPage() {
+  const relatedGuideLinks = getGuideLinks({
+    includeTags: ["how-to-core", "online", "watch-party"],
+    limit: 4,
+  });
+
   return (
     <SeoPageLayout
       breadcrumbs={[
@@ -166,6 +172,13 @@ export default function CrunchyrollExtensionsPage() {
         <li><Link href="/watch-crunchyroll-together" className="hover:underline">Watch Crunchyroll Together (Complete Guide)</Link></li>
         <li><Link href="/guides/how-to-watch-crunchyroll-with-friends" className="hover:underline">How to Watch Crunchyroll with Friends</Link></li>
         <li><Link href="/compare/anidachi-vs-teleparty" className="hover:underline">AniDachi vs Teleparty</Link></li>
+        {relatedGuideLinks.map((guide) => (
+          <li key={guide.href}>
+            <Link href={guide.href} className="hover:underline">
+              {guide.label}
+            </Link>
+          </li>
+        ))}
       </ul>
     </SeoPageLayout>
   );

@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { SeoPageLayout, type TocHeading } from "@/components/seo-page-layout";
+import { getGuideLinks } from "@/lib/guide-links";
 
 export const metadata: Metadata = {
   title: "AniDachi vs Teleparty: Which Is Better for Anime Watch Parties?",
@@ -43,6 +44,11 @@ const headings: TocHeading[] = [
 ];
 
 export default function AniDachiVsTelepartyPage() {
+  const relatedGuideLinks = getGuideLinks({
+    includeTags: ["how-to-core", "online", "long-distance"],
+    limit: 3,
+  });
+
   return (
     <SeoPageLayout
       breadcrumbs={[
@@ -54,7 +60,7 @@ export default function AniDachiVsTelepartyPage() {
       description="Side-by-side comparison for anime watch parties."
       url="/compare/anidachi-vs-teleparty"
       datePublished="2026-04-23"
-      dateModified="2026-04-24"
+      dateModified="2026-04-27"
       faq={faq}
       headings={headings}
     >
@@ -162,9 +168,21 @@ export default function AniDachiVsTelepartyPage() {
         Related
       </h2>
       <ul className="space-y-2 text-purple-600">
+        <li>
+          <Link href="/#pricing" className="hover:underline">
+            Start paid plan — unlock async watchrooms on Crunchyroll
+          </Link>
+        </li>
         <li><Link href="/watch-crunchyroll-together" className="hover:underline">Watch Crunchyroll Together (Complete Guide)</Link></li>
         <li><Link href="/guides/crunchyroll-watch-party-chrome-extension" className="hover:underline">Best Crunchyroll Watch Party Chrome Extensions</Link></li>
         <li><Link href="/guides/asynchronous-vs-live-watch-party" className="hover:underline">Async vs Live Watch Parties</Link></li>
+        {relatedGuideLinks.map((guide) => (
+          <li key={guide.href}>
+            <Link href={guide.href} className="hover:underline">
+              {guide.label}
+            </Link>
+          </li>
+        ))}
       </ul>
     </SeoPageLayout>
   );

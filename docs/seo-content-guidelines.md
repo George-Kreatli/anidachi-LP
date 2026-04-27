@@ -144,6 +144,7 @@ Place the primary keyword in: `<title>`, `<h1>`, first ~100 words, at least one 
 - One to `/` or `/#pricing`
 - One to a pillar: `/watch-anime-together` or `/watch-crunchyroll-together`
 - One to a related live page
+- Add every new guide/listicle route to `lib/guide-links.ts` so hub pages can pick it up automatically.
 
 When you add a Template A page, update the **pillar** (e.g. “Popular anime”) so the graph stays bidirectional.
 

@@ -1,11 +1,22 @@
 "use client";
 
+import { useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Play, Users, MessageCircle, Chrome } from "lucide-react";
 import Link from "next/link";
 import { trackEvent } from "@/lib/gtag";
+import { trackConversion } from "@/lib/conversion-events";
 
 export function Hero() {
+  useEffect(() => {
+    trackConversion("cta_impression", {
+      page_path: "/",
+      page_template: "home",
+      placement: "hero",
+      cta_variant: "hero_start_paid_plan",
+    });
+  }, []);
+
   return (
     <section className="relative overflow-hidden bg-gradient-to-br from-purple-600 via-purple-700 to-blue-800 text-white">
       <div className="absolute inset-0">
@@ -41,10 +52,17 @@ export function Hero() {
             >
               <Link
                 href="#pricing"
-                onClick={() => trackEvent("cta_click", { cta: "hero_signup" })}
+                onClick={() =>
+                  trackConversion("cta_click", {
+                    page_path: "/",
+                    page_template: "home",
+                    placement: "hero",
+                    cta_variant: "hero_start_paid_plan",
+                  })
+                }
               >
                 <Play className="mr-2 h-5 w-5" aria-hidden="true" />
-                Get Started
+                Start paid plan
               </Link>
             </Button>
             <Button
@@ -64,6 +82,11 @@ export function Hero() {
               </a>
             </Button>
           </div>
+
+          <p className="text-xs text-purple-200/95 mb-6 max-w-md mx-auto">
+            Early access from $8/mo — secure Stripe checkout. Everyone keeps
+            their own Crunchyroll login; AniDachi is the watchroom layer.
+          </p>
 
           <div className="flex flex-wrap justify-center gap-4 text-xs text-purple-200 mb-10">
             <span>Works with Crunchyroll</span>

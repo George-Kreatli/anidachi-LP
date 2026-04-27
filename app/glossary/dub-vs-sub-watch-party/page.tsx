@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { SeoPageLayout, type TocHeading } from "@/components/seo-page-layout";
+import { getGuideLinks } from "@/lib/guide-links";
 
 export const metadata: Metadata = {
   title: "Dub vs Sub for Anime Watch Parties — Which Is Better?",
@@ -36,6 +37,11 @@ const tocHeadings: TocHeading[] = [
 ];
 
 export default function DubVsSubGlossaryPage() {
+  const relatedGuideLinks = getGuideLinks({
+    includeTags: ["how-to-core", "watch-party", "online"],
+    limit: 4,
+  });
+
   return (
     <SeoPageLayout
       breadcrumbs={[
@@ -116,6 +122,13 @@ export default function DubVsSubGlossaryPage() {
         <li><Link href="/glossary/anime-simulcast" className="hover:underline">What Is an Anime Simulcast?</Link></li>
         <li><Link href="/glossary/watchroom" className="hover:underline">What Is a Watchroom?</Link></li>
         <li><Link href="/guides/best-anime-to-watch-with-friends" className="hover:underline">Best Anime to Watch with Friends</Link></li>
+        {relatedGuideLinks.map((guide) => (
+          <li key={guide.href}>
+            <Link href={guide.href} className="hover:underline">
+              {guide.label}
+            </Link>
+          </li>
+        ))}
       </ul>
     </SeoPageLayout>
   );

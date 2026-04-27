@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { SeoPageLayout, type TocHeading } from "@/components/seo-page-layout";
+import { getGuideLinks } from "@/lib/guide-links";
 
 export const metadata: Metadata = {
   title: "Anime Watch Party Ideas — Fun Ways to Watch with Friends (2026)",
@@ -31,6 +32,11 @@ const tocHeadings: TocHeading[] = [
 ];
 
 export default function AnimeWatchPartyIdeasPage() {
+  const relatedGuideLinks = getGuideLinks({
+    includeTags: ["how-to-core", "watch-party", "online"],
+    limit: 5,
+  });
+
   return (
     <SeoPageLayout
       breadcrumbs={[
@@ -129,6 +135,13 @@ export default function AnimeWatchPartyIdeasPage() {
         <li><Link href="/watch-anime-together" className="hover:underline">Watch Anime Together (Complete Guide)</Link></li>
         <li><Link href="/guides/best-anime-to-watch-with-friends" className="hover:underline">Best Anime to Watch with Friends</Link></li>
         <li><Link href="/guides/asynchronous-vs-live-watch-party" className="hover:underline">Async vs Live Watch Parties</Link></li>
+        {relatedGuideLinks.map((guide) => (
+          <li key={guide.href}>
+            <Link href={guide.href} className="hover:underline">
+              {guide.label}
+            </Link>
+          </li>
+        ))}
       </ul>
     </SeoPageLayout>
   );

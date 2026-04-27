@@ -13,6 +13,7 @@ import {
   resolveRelatedFromJikan,
 } from "@/lib/jikan-for-watch-page";
 import { SeoPageLayout, type TocHeading } from "@/components/seo-page-layout";
+import { PrimaryCheckoutCta } from "@/components/primary-checkout-cta";
 
 interface Props {
   params: Promise<{ slug: string }>;
@@ -153,6 +154,13 @@ export default async function AnimeWithFriendsPage({ params }: Props) {
           })()}
         </strong>
       </p>
+
+      <PrimaryCheckoutCta
+        pagePath={`/watch/${rawSlug}`}
+        pageTemplate="anime"
+        placement="content_mid"
+        className="!mt-0 mb-10"
+      />
 
       <div id="series-overview" className="bg-gray-50 rounded-lg p-6 mb-8 scroll-mt-24">
         <h2 className="text-2xl font-bold text-gray-900 mb-4">

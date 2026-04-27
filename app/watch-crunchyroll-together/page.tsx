@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { SeoPageLayout, type TocHeading } from "@/components/seo-page-layout";
+import { getGuideLinks } from "@/lib/guide-links";
 
 export const metadata: Metadata = {
   title: "Watch Crunchyroll Together — Sync Anime with Friends in 2026",
@@ -58,6 +59,11 @@ const tocHeadings: TocHeading[] = [
 ];
 
 export default function WatchCrunchyrollTogetherPage() {
+  const relatedGuideLinks = getGuideLinks({
+    includeTags: ["pillar-watch-crunchyroll", "how-to-core", "time-zones"],
+    limit: 7,
+  });
+
   return (
     <SeoPageLayout
       breadcrumbs={[
@@ -206,16 +212,13 @@ export default function WatchCrunchyrollTogetherPage() {
         Related Guides
       </h2>
       <ul className="space-y-2 text-purple-600">
-        <li>
-          <Link href="/guides/how-to-watch-crunchyroll-with-friends" className="hover:underline">
-            How to Watch Crunchyroll with Friends (Detailed Guide)
-          </Link>
-        </li>
-        <li>
-          <Link href="/guides/crunchyroll-watch-party-chrome-extension" className="hover:underline">
-            Best Crunchyroll Watch Party Chrome Extensions
-          </Link>
-        </li>
+        {relatedGuideLinks.map((guide) => (
+          <li key={guide.href}>
+            <Link href={guide.href} className="hover:underline">
+              {guide.label}
+            </Link>
+          </li>
+        ))}
         <li>
           <Link href="/compare/anidachi-vs-teleparty" className="hover:underline">
             AniDachi vs Teleparty: Which Is Better?

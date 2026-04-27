@@ -19,12 +19,12 @@ export default function Home() {
     <main id="main-content" className="min-h-screen bg-gradient-to-br from-purple-50 via-white to-blue-50">
       <Hero />
       <HowItWorks />
-      <ChromeExtensionDemo />
       <MainAppFeatures />
+      <ChromeExtensionDemo />
       <ChromeExtensionFeatures />
       <CompareTable />
-      <FAQSection questions={homeFAQ} />
       <Pricing />
+      <FAQSection questions={homeFAQ} />
       <Footer />
 
       <SoftwareApplicationJsonLd />

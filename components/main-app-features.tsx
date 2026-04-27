@@ -1,3 +1,6 @@
+"use client";
+
+import { useEffect, useRef } from "react";
 import {
   Card,
   CardContent,
@@ -8,8 +11,49 @@ import {
 import { Users, MessageSquare, History, ArrowRight } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import Link from "next/link";
+import { trackConversion } from "@/lib/conversion-events";
 
 export function MainAppFeatures() {
+  const bottomCtaFired = useRef(false);
+  const bottomCtaRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    const el = bottomCtaRef.current;
+    if (!el) return;
+    if (typeof IntersectionObserver === "undefined") {
+      if (!bottomCtaFired.current) {
+        bottomCtaFired.current = true;
+        trackConversion("cta_impression", {
+          page_path: "/",
+          page_template: "home",
+          placement: "home_features",
+          cta_variant: "home_features_pricing",
+        });
+      }
+      return;
+    }
+    const ob = new IntersectionObserver(
+      (entries) => {
+        for (const e of entries) {
+          if (e.isIntersecting && !bottomCtaFired.current) {
+            bottomCtaFired.current = true;
+            trackConversion("cta_impression", {
+              page_path: "/",
+              page_template: "home",
+              placement: "home_features",
+              cta_variant: "home_features_pricing",
+            });
+            ob.disconnect();
+            break;
+          }
+        }
+      },
+      { threshold: 0.25 }
+    );
+    ob.observe(el);
+    return () => ob.disconnect();
+  }, []);
+
   const features = [
     {
       id: "async-watching",
@@ -119,14 +163,24 @@ export function MainAppFeatures() {
           ))}
         </div>
 
-        <div className="text-center">
+        <div className="text-center" ref={bottomCtaRef}>
           <Button
             size="lg"
             className="bg-purple-600 hover:bg-purple-700 text-white px-8 py-4 text-lg font-semibold shadow-lg hover:shadow-xl transition-all duration-300"
             asChild
           >
-            <Link href="#pricing">
-              Get Started
+            <Link
+              href="#pricing"
+              onClick={() =>
+                trackConversion("cta_click", {
+                  page_path: "/",
+                  page_template: "home",
+                  placement: "home_features",
+                  cta_variant: "home_features_pricing",
+                })
+              }
+            >
+              Start paid plan
               <ArrowRight className="ml-2 h-5 w-5" aria-hidden="true" />
             </Link>
           </Button>

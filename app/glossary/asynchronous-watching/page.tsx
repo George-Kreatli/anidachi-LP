@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { SeoPageLayout, type TocHeading } from "@/components/seo-page-layout";
+import { getGuideLinks } from "@/lib/guide-links";
 
 export const metadata: Metadata = {
   title: "What Is Asynchronous Anime Watching? — Glossary",
@@ -35,6 +36,11 @@ const tocHeadings: TocHeading[] = [
 ];
 
 export default function AsyncWatchingGlossaryPage() {
+  const relatedGuideLinks = getGuideLinks({
+    includeTags: ["how-to-core", "time-zones", "long-distance", "spoilers"],
+    limit: 4,
+  });
+
   return (
     <SeoPageLayout
       breadcrumbs={[
@@ -101,6 +107,13 @@ export default function AsyncWatchingGlossaryPage() {
         <li><Link href="/glossary/watchroom" className="hover:underline">What Is a Watchroom?</Link></li>
         <li><Link href="/guides/asynchronous-vs-live-watch-party" className="hover:underline">Async vs Live Watch Parties</Link></li>
         <li><Link href="/watch-anime-together" className="hover:underline">Watch Anime Together Guide</Link></li>
+        {relatedGuideLinks.map((guide) => (
+          <li key={guide.href}>
+            <Link href={guide.href} className="hover:underline">
+              {guide.label}
+            </Link>
+          </li>
+        ))}
       </ul>
     </SeoPageLayout>
   );

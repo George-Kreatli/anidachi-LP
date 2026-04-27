@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { SeoPageLayout, type TocHeading } from "@/components/seo-page-layout";
+import { getGuideLinks } from "@/lib/guide-links";
 
 export const metadata: Metadata = {
   title: "How to Watch Crunchyroll with Friends (2026 Guide)",
@@ -42,6 +43,11 @@ const tocHeadings: TocHeading[] = [
 ];
 
 export default function HowToWatchWithFriendsPage() {
+  const relatedGuideLinks = getGuideLinks({
+    includeTags: ["how-to-core", "online", "time-zones"],
+    limit: 4,
+  });
+
   return (
     <SeoPageLayout
       breadcrumbs={[
@@ -152,6 +158,13 @@ export default function HowToWatchWithFriendsPage() {
             AniDachi vs Teleparty
           </Link>
         </li>
+        {relatedGuideLinks.map((guide) => (
+          <li key={guide.href}>
+            <Link href={guide.href} className="hover:underline">
+              {guide.label}
+            </Link>
+          </li>
+        ))}
       </ul>
     </SeoPageLayout>
   );

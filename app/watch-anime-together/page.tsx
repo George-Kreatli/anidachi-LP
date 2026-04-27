@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { SeoPageLayout, type TocHeading } from "@/components/seo-page-layout";
+import { getGuideLinks } from "@/lib/guide-links";
 
 export const metadata: Metadata = {
   title: "Watch Anime Together Online — The Complete Guide (2026)",
@@ -56,6 +57,11 @@ const tocHeadings: TocHeading[] = [
 ];
 
 export default function WatchAnimeTogetherPage() {
+  const allGuideLinks = getGuideLinks({
+    includeTags: ["pillar-watch-anime", "how-to-core"],
+    limit: 10,
+  });
+
   return (
     <SeoPageLayout
       breadcrumbs={[
@@ -66,7 +72,7 @@ export default function WatchAnimeTogetherPage() {
       description="Everything you need to watch anime with friends online."
       url="/watch-anime-together"
       datePublished="2026-04-23"
-      dateModified="2026-04-24"
+      dateModified="2026-04-27"
       faq={faq}
       headings={tocHeadings}
     >
@@ -81,8 +87,17 @@ export default function WatchAnimeTogetherPage() {
           and lets you watch asynchronously.
         </strong>{" "}
         Whether your friends are across the room or across the world, shared
-        anime experiences are better than watching alone. This guide covers
+        anime         experiences are better than watching alone. This guide covers
         every method, tool, and tip.
+      </p>
+
+      <p className="text-gray-700 mb-8">
+        Ready to try the Crunchyroll-first option?{" "}
+        <Link href="/#pricing" className="text-purple-600 font-medium hover:underline">
+          Start a paid AniDachi plan
+        </Link>{" "}
+        — early-access pricing with a clear refund path, then create your first
+        watchroom in minutes.
       </p>
 
       <h2
@@ -200,12 +215,19 @@ export default function WatchAnimeTogetherPage() {
       </h2>
       <ul className="space-y-2 text-purple-600">
         <li><Link href="/watch-crunchyroll-together" className="hover:underline">Watch Crunchyroll Together</Link></li>
-        <li><Link href="/guides/how-to-watch-crunchyroll-with-friends" className="hover:underline">How to Watch Crunchyroll with Friends</Link></li>
-        <li><Link href="/guides/crunchyroll-watch-party-chrome-extension" className="hover:underline">Best Crunchyroll Watch Party Chrome Extensions</Link></li>
+        <li>
+          <Link href="/#pricing" className="hover:underline">
+            Start paid plan — see early-access pricing
+          </Link>
+        </li>
         <li><Link href="/compare/anidachi-vs-teleparty" className="hover:underline">AniDachi vs Teleparty</Link></li>
-        <li><Link href="/guides/anime-watch-party-ideas" className="hover:underline">Anime Watch Party Ideas</Link></li>
-        <li><Link href="/guides/best-anime-to-watch-with-friends" className="hover:underline">Best Anime to Watch with Friends</Link></li>
-        <li><Link href="/guides/asynchronous-vs-live-watch-party" className="hover:underline">Async vs Live Watch Parties</Link></li>
+        {allGuideLinks.map((guide) => (
+          <li key={guide.href}>
+            <Link href={guide.href} className="hover:underline">
+              {guide.label}
+            </Link>
+          </li>
+        ))}
       </ul>
     </SeoPageLayout>
   );
