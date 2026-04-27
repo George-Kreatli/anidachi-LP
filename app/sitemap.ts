@@ -24,6 +24,31 @@ export default function sitemap(): MetadataRoute.Sitemap {
       priority: 0.8,
     },
     {
+      url: `${SITE_URL}/guides/how-to-watch-anime-with-friends-online`,
+      changeFrequency: "monthly",
+      priority: 0.8,
+    },
+    {
+      url: `${SITE_URL}/guides/how-to-watch-anime-long-distance`,
+      changeFrequency: "monthly",
+      priority: 0.8,
+    },
+    {
+      url: `${SITE_URL}/guides/how-to-watch-anime-with-friends-in-different-time-zones`,
+      changeFrequency: "monthly",
+      priority: 0.8,
+    },
+    {
+      url: `${SITE_URL}/guides/how-to-watch-anime-without-spoilers`,
+      changeFrequency: "monthly",
+      priority: 0.8,
+    },
+    {
+      url: `${SITE_URL}/guides/how-to-create-an-anime-watch-party`,
+      changeFrequency: "monthly",
+      priority: 0.8,
+    },
+    {
       url: `${SITE_URL}/guides/crunchyroll-watch-party-chrome-extension`,
       changeFrequency: "monthly",
       priority: 0.8,
