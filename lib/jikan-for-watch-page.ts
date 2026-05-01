@@ -11,15 +11,19 @@ import { getSlugByMalIdMap } from "@/lib/anime-mal-ids";
 /** Cached for the RSC so metadata + page body can share one Jikan round-trip per slug. */
 export const fetchJikanForWatchPage = cache(
   async (malId: number) => {
+    let jikanAnime: Awaited<ReturnType<typeof getAnimeById>> | null = null;
     try {
-      const [jikanAnime, recs] = await Promise.all([
-        getAnimeById(malId),
-        getAnimeRecommendations(malId),
-      ]);
-      return { jikanAnime, recs } as const;
+      jikanAnime = await getAnimeById(malId);
     } catch {
       return null;
     }
+    let recs: Awaited<ReturnType<typeof getAnimeRecommendations>> = [];
+    try {
+      recs = await getAnimeRecommendations(malId);
+    } catch {
+      // Jikan often rate-limits; keep poster + core anime metadata when recs fail.
+    }
+    return { jikanAnime, recs } as const;
   }
 );
 
