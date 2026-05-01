@@ -28,6 +28,8 @@ export interface SeoPageLayoutProps {
   aboveFoldCta?: boolean;
   /** Override autodetected template (from `url`) for conversion analytics + CTA copy */
   conversionTemplate?: PageTemplateId;
+  /** Primary image URL(s) for Article JSON-LD (absolute URLs preferred). */
+  articleImage?: string | string[];
   /** Optional CTA or promo block between main content and bottom checkout CTA (e.g. after intro on long guides) */
   midContentSlot?: ReactNode;
   children: React.ReactNode;
@@ -45,6 +47,7 @@ export function SeoPageLayout({
   itemList,
   aboveFoldCta,
   conversionTemplate,
+  articleImage,
   midContentSlot,
   children,
 }: SeoPageLayoutProps) {
@@ -131,6 +134,7 @@ export function SeoPageLayout({
         url={url}
         datePublished={datePublished}
         dateModified={dateModified}
+        image={articleImage}
       />
       {faq && faq.length > 0 && <FAQPageJsonLd questions={faq} />}
       {itemList && itemList.length > 0 && (

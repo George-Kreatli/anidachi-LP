@@ -54,6 +54,17 @@ export const MAL_ID_BY_SLUG: Record<string, number> = {
   "parasyte": 22535,
   "erased": 31043,
   "hells-paradise": 46569,
+  "jojos-bizarre-adventure": 14719,
+  "gurren-lagann": 2001,
+  "the-promised-neverland": 37779,
+  "blue-exorcist": 9919,
+  "no-game-no-life": 19815,
+  "food-wars-shokugeki-no-soma": 28171,
+  "classroom-of-the-elite": 35507,
+  "toradora": 4224,
+  "ranking-of-kings": 40834,
+  "dragon-ball-z": 813,
+  "my-dress-up-darling": 48736,
 } as const;
 
 export function getMalIdForSlug(slug: string): number | undefined {

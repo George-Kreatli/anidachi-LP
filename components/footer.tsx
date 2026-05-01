@@ -104,6 +104,22 @@ export function Footer() {
               </li>
               <li>
                 <Link
+                  href="/guides/how-to-watch-anime-with-friends-on-discord"
+                  className="hover:text-white transition-colors"
+                >
+                  Anime Watch Party on Discord
+                </Link>
+              </li>
+              <li>
+                <Link
+                  href="/guides/how-to-watch-anime-with-a-group"
+                  className="hover:text-white transition-colors"
+                >
+                  Watch Anime With a Group
+                </Link>
+              </li>
+              <li>
+                <Link
                   href="/compare/anidachi-vs-teleparty"
                   className="hover:text-white transition-colors"
                 >
@@ -116,6 +132,14 @@ export function Footer() {
                   className="hover:text-white transition-colors"
                 >
                   Best Anime with Friends
+                </Link>
+              </li>
+              <li>
+                <Link
+                  href="/guides/best-anime-to-watch-for-beginners"
+                  className="hover:text-white transition-colors"
+                >
+                  Best Anime for Beginners
                 </Link>
               </li>
             </ul>

@@ -214,6 +214,14 @@ export default function HowToWatchAnimeWithFriendsOnlinePage() {
           </li>
           <li>
             <Link
+              href="/guides/how-to-watch-anime-with-friends-on-discord"
+              className="hover:underline"
+            >
+              How to Watch Anime With Friends on Discord
+            </Link>
+          </li>
+          <li>
+            <Link
               href="/guides/asynchronous-vs-live-watch-party"
               className="hover:underline"
             >

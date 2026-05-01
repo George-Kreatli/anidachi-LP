@@ -41,6 +41,11 @@ export const metadata: Metadata = {
     description:
       "Create watchrooms, sync Crunchyroll playback with friends, and chat in real-time.",
   },
+  icons: {
+    icon: "/Anidachi_logo.png",
+    shortcut: "/Anidachi_logo.png",
+    apple: "/Anidachi_logo.png",
+  },
   robots: { index: true, follow: true },
 };
 
@@ -51,9 +56,6 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en" className="scroll-smooth">
-      <head>
-        <link rel="icon" href="/Anidachi_logo.png" />
-      </head>
       <body
         className={`${geistSans.variable} ${geistMono.variable} antialiased`}
       >

@@ -509,4 +509,114 @@ export const animeList: AnimeEntry[] = [
     genres: ["Action", "Supernatural", "Historical"],
     related: ["chainsaw-man", "jujutsu-kaisen", "demon-slayer"],
   },
+  {
+    slug: "jojos-bizarre-adventure",
+    title: "JoJo's Bizarre Adventure",
+    japaneseTitle: "JoJo no Kimyou na Bouken (TV)",
+    synopsis:
+      "The Joestar bloodline inherits bizarre psychic powers—and deadly rivals—across generations. From Victorian intrigue to globe-trotting showdowns, each arc remixes genre with unforgettable poses, fights, and cliffhangers built for live reactions.",
+    episodes: "Season 1 (Phantom Blood / Battle Tendency): 26 episodes; franchise continues across multiple cours",
+    genres: ["Action", "Adventure", "Supernatural"],
+    related: ["demon-slayer", "jujutsu-kaisen", "hunter-x-hunter"],
+  },
+  {
+    slug: "gurren-lagann",
+    title: "Gurren Lagann",
+    japaneseTitle: "Tengen Toppa Gurren Lagann",
+    synopsis:
+      "Simon and Kamina drill upward from an underground village toward the surface—and keep escalating against impossible odds. Pure-hearted hype, giant robots, and speeches that reward shouting back at the screen with friends.",
+    episodes: "27 episodes",
+    genres: ["Action", "Mecha", "Sci-Fi"],
+    related: ["neon-genesis-evangelion", "fullmetal-alchemist-brotherhood", "attack-on-titan"],
+  },
+  {
+    slug: "the-promised-neverland",
+    title: "The Promised Neverland",
+    japaneseTitle: "Yakusoku no Neverland",
+    synopsis:
+      "Orphans Emma, Norman, and Ray discover their idyllic farm hides a horrifying truth. Every revelation reshuffles alliances—ideal for watchrooms that love theorizing between episodes.",
+    episodes: "23 episodes across 2 seasons",
+    genres: ["Mystery", "Thriller", "Sci-Fi"],
+    related: ["erased", "death-note", "tokyo-ghoul"],
+  },
+  {
+    slug: "blue-exorcist",
+    title: "Blue Exorcist",
+    japaneseTitle: "Ao no Exorcist",
+    synopsis:
+      "Rin Okumura learns he is the son of Satan but trains as an exorcist alongside his twin Yukio. Demon hunts, academy rivalries, and brotherhood tension fuel binge-friendly arcs.",
+    episodes: "37+ episodes across multiple seasons",
+    genres: ["Action", "Supernatural", "School"],
+    related: ["demon-slayer", "jujutsu-kaisen", "bleach"],
+  },
+  {
+    slug: "no-game-no-life",
+    title: "No Game, No Life",
+    japaneseTitle: "No Game No Life",
+    synopsis:
+      "Shut-in gamer siblings Shiro and Sora are summoned to Disboard, where every conflict is settled by games. Rule-bending gambits and candy-colored chaos pair well with group commentary.",
+    episodes: "12 episodes + movie",
+    genres: ["Adventure", "Comedy", "Fantasy"],
+    related: ["sword-art-online", "konosuba", "that-time-i-got-reincarnated-as-a-slime"],
+  },
+  {
+    slug: "food-wars-shokugeki-no-soma",
+    title: "Food Wars! Shokugeki no Soma",
+    japaneseTitle: "Shokugeki no Souma",
+    synopsis:
+      "Yukihira Soma enters an elite culinary academy where formal duels decide reputations—often with theatrical flair. Competitive tension and mouthwatering visuals make every episode an event.",
+    episodes: "85 episodes across multiple seasons",
+    genres: ["Comedy", "School", "Shounen"],
+    related: ["haikyuu", "kaguya-sama", "my-hero-academia"],
+  },
+  {
+    slug: "classroom-of-the-elite",
+    title: "Classroom of the Elite",
+    japaneseTitle: "Youkoso Jitsuryoku Shijou Shugi no Kyoushitsu e",
+    synopsis:
+      "Tokyo Metropolitan Advanced Nurturing High School ranks classes ruthlessly. Quiet protagonist Kiyotaka navigates exams and schemes while classmates underestimate him—fuel for pause-and-debate moments.",
+    episodes: "39+ episodes across multiple seasons",
+    genres: ["Drama", "Psychological", "School"],
+    related: ["kaguya-sama", "death-note", "steins-gate"],
+  },
+  {
+    slug: "toradora",
+    title: "Toradora!",
+    japaneseTitle: "Toradora!",
+    synopsis:
+      "Ryuji and Taiga strike a pact to help each other confess to their crushes—until feelings blur. Sharp comedy and emotional payoffs land hardest when watched with friends who argue ships.",
+    episodes: "25 episodes",
+    genres: ["Comedy", "Romance", "Slice of Life"],
+    related: ["kaguya-sama", "spy-x-family", "bocchi-the-rock"],
+  },
+  {
+    slug: "ranking-of-kings",
+    title: "Ranking of Kings",
+    japaneseTitle: "Ousama Ranking",
+    synopsis:
+      "Deaf prince Bojji aims to become king despite ridicule from court and kingdoms. Fairy-tale framing hides muscular storytelling—perfect for rooms that cheer underdog arcs together.",
+    episodes: "23 episodes (Season 1)",
+    genres: ["Adventure", "Fantasy", "Drama"],
+    related: ["made-in-abyss", "violet-evergarden", "frieren-beyond-journeys-end"],
+  },
+  {
+    slug: "dragon-ball-z",
+    title: "Dragon Ball Z",
+    japaneseTitle: "Dragon Ball Z",
+    synopsis:
+      "Goku and the Z Fighters defend Earth from aliens, androids, and world-ending villains. Transformation reveals, beam struggles, and tournament hype are engraved in anime history—ideal for synchronized hype or async catch-up threads.",
+    episodes: "291 episodes",
+    genres: ["Action", "Adventure", "Sci-Fi"],
+    related: ["dragon-ball-super", "naruto", "one-piece"],
+  },
+  {
+    slug: "my-dress-up-darling",
+    title: "My Dress-Up Darling",
+    japaneseTitle: "Sono Bisque Doll wa Koi wo Suru",
+    synopsis:
+      "Quiet hobby craftsman Wakana Gojo hides his passion for traditional dolls until loud, popular Marin Kitagawa discovers his sewing skill and recruits him for cosplay—starting with a brazen hallway pitch that flips his entire social orbit. Every fitting becomes half comedy roast and half sincere craft nerd-out; when Marin tears through fabric mishaps or Gojo freezes mid-confession, your watch party has endless pause-worthy beats.",
+    episodes: "24+ episodes across multiple seasons",
+    genres: ["Romance", "Comedy", "Slice of Life"],
+    related: ["kaguya-sama", "toradora", "bocchi-the-rock"],
+  },
 ];

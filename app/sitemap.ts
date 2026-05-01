@@ -29,6 +29,11 @@ export default function sitemap(): MetadataRoute.Sitemap {
       priority: 0.8,
     },
     {
+      url: `${SITE_URL}/guides/how-to-watch-anime-with-friends-on-discord`,
+      changeFrequency: "monthly",
+      priority: 0.8,
+    },
+    {
       url: `${SITE_URL}/guides/how-to-watch-anime-long-distance`,
       changeFrequency: "monthly",
       priority: 0.8,
@@ -49,6 +54,11 @@ export default function sitemap(): MetadataRoute.Sitemap {
       priority: 0.8,
     },
     {
+      url: `${SITE_URL}/guides/how-to-watch-anime-with-a-group`,
+      changeFrequency: "monthly",
+      priority: 0.8,
+    },
+    {
       url: `${SITE_URL}/guides/crunchyroll-watch-party-chrome-extension`,
       changeFrequency: "monthly",
       priority: 0.8,
@@ -65,6 +75,11 @@ export default function sitemap(): MetadataRoute.Sitemap {
     },
     {
       url: `${SITE_URL}/guides/best-anime-to-watch-with-friends`,
+      changeFrequency: "monthly",
+      priority: 0.7,
+    },
+    {
+      url: `${SITE_URL}/guides/best-anime-to-watch-for-beginners`,
       changeFrequency: "monthly",
       priority: 0.7,
     },

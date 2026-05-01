@@ -205,6 +205,17 @@ export default function WatchAnimeTogetherPage() {
         <li><Link href="/watch/solo-leveling-with-friends" className="hover:underline">Solo Leveling</Link></li>
         <li><Link href="/watch/frieren-beyond-journeys-end-with-friends" className="hover:underline">Frieren</Link></li>
         <li><Link href="/watch/hells-paradise-with-friends" className="hover:underline">Hell&apos;s Paradise</Link></li>
+        <li><Link href="/watch/jojos-bizarre-adventure-with-friends" className="hover:underline">JoJo&apos;s Bizarre Adventure</Link></li>
+        <li><Link href="/watch/gurren-lagann-with-friends" className="hover:underline">Gurren Lagann</Link></li>
+        <li><Link href="/watch/the-promised-neverland-with-friends" className="hover:underline">The Promised Neverland</Link></li>
+        <li><Link href="/watch/blue-exorcist-with-friends" className="hover:underline">Blue Exorcist</Link></li>
+        <li><Link href="/watch/no-game-no-life-with-friends" className="hover:underline">No Game, No Life</Link></li>
+        <li><Link href="/watch/food-wars-shokugeki-no-soma-with-friends" className="hover:underline">Food Wars</Link></li>
+        <li><Link href="/watch/classroom-of-the-elite-with-friends" className="hover:underline">Classroom of the Elite</Link></li>
+        <li><Link href="/watch/toradora-with-friends" className="hover:underline">Toradora!</Link></li>
+        <li><Link href="/watch/ranking-of-kings-with-friends" className="hover:underline">Ranking of Kings</Link></li>
+        <li><Link href="/watch/dragon-ball-z-with-friends" className="hover:underline">Dragon Ball Z</Link></li>
+        <li><Link href="/watch/my-dress-up-darling-with-friends" className="hover:underline">My Dress-Up Darling</Link></li>
       </ul>
 
       <h2

@@ -41,6 +41,15 @@ export function resolveRelatedFromJikan(
   return out;
 }
 
+/** Prefer large poster from Jikan; safe when `jikan` is null or fetch failed. */
+export function posterUrlFromJikan(j: JikanAnime | null): string | null {
+  if (j == null) return null;
+  const large = j.images?.jpg?.large_image_url?.trim();
+  const fallback = j.images?.jpg?.image_url?.trim();
+  const url = large || fallback;
+  return url || null;
+}
+
 export function formatEpisodesForUi(
   j: JikanAnime | null,
   staticEpisodes: string

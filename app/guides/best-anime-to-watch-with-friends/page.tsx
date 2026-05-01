@@ -149,6 +149,14 @@ export default function BestAnimeWithFriendsPage() {
       </h2>
       <ul className="space-y-2 text-purple-600">
         <li><Link href="/watch-anime-together" className="hover:underline">Watch Anime Together (Complete Guide)</Link></li>
+        <li>
+          <Link
+            href="/guides/best-anime-to-watch-for-beginners"
+            className="hover:underline"
+          >
+            Best Anime for Beginners
+          </Link>
+        </li>
         <li><Link href="/guides/anime-watch-party-ideas" className="hover:underline">Anime Watch Party Ideas</Link></li>
         <li><Link href="/watch-crunchyroll-together" className="hover:underline">Watch Crunchyroll Together</Link></li>
       </ul>

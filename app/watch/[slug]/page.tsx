@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import Image from "next/image";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { animeList, type AnimeEntry } from "@/lib/anime-data";
@@ -10,6 +11,7 @@ import {
   formatScoreLine,
   jikanGenresText,
   jikanStatusLine,
+  posterUrlFromJikan,
   resolveRelatedFromJikan,
 } from "@/lib/jikan-for-watch-page";
 import { SeoPageLayout, type TocHeading } from "@/components/seo-page-layout";
@@ -35,6 +37,11 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const anime = getAnimeBySlug(rawSlug);
   if (!anime) return {};
 
+  const malId = getMalIdForSlug(anime.slug);
+  const jikanBundle =
+    malId != null ? await fetchJikanForWatchPage(malId) : null;
+  const posterUrl = posterUrlFromJikan(jikanBundle?.jikanAnime ?? null);
+
   return {
     title: `Watch ${anime.title} with Friends — Create a Watchroom`,
     description: `Watch ${anime.title} together with friends online. Create a Crunchyroll watchroom, sync playback, chat in real-time, and track progress — even asynchronously.`,
@@ -43,7 +50,25 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
       title: `Watch ${anime.title} with Friends | AniDachi`,
       description: `Set up a shared ${anime.title} watchroom on Crunchyroll in seconds.`,
       url: `/watch/${rawSlug}`,
+      ...(posterUrl
+        ? {
+            images: [
+              {
+                url: posterUrl,
+                alt: `${anime.title} anime poster — watch together with friends`,
+              },
+            ],
+          }
+        : {}),
     },
+    ...(posterUrl
+      ? {
+          twitter: {
+            card: "summary_large_image",
+            images: [posterUrl],
+          },
+        }
+      : {}),
   };
 }
 
@@ -94,6 +119,7 @@ export default async function AnimeWithFriendsPage({ params }: Props) {
   const membersLine = formatMembersLine(jikan);
   const statusLine = jikanStatusLine(jikan);
   const genresDisplay = jikanGenresText(jikan, anime.genres);
+  const posterUrl = posterUrlFromJikan(jikan);
 
   const faq = [
     {
@@ -129,6 +155,7 @@ export default async function AnimeWithFriendsPage({ params }: Props) {
       title={`Watch ${anime.title} with Friends — AniDachi Watchrooms`}
       description={`Create a shared ${anime.title} watchroom on Crunchyroll. Sync, chat, and track progress with friends—async when you need it.`}
       url={`/watch/${rawSlug}`}
+      articleImage={posterUrl ?? undefined}
       datePublished="2026-04-23"
       dateModified="2026-04-24"
       faq={faq}
@@ -163,55 +190,75 @@ export default async function AnimeWithFriendsPage({ params }: Props) {
       />
 
       <div id="series-overview" className="bg-gray-50 rounded-lg p-6 mb-8 scroll-mt-24">
-        <h2 className="text-2xl font-bold text-gray-900 mb-4">
-          What is {anime.title}?
-        </h2>
-        <div className="grid grid-cols-2 gap-4 text-sm">
-          {anime.japaneseTitle && (
-            <div>
-              <span className="text-gray-500">Japanese title</span>
-              <p className="font-medium text-gray-900">{anime.japaneseTitle}</p>
+        <div className="flex flex-col gap-6 md:flex-row md:items-start">
+          {posterUrl ? (
+            <figure className="mx-auto shrink-0 md:mx-0 w-[min(220px,55vw)]">
+              <Image
+                src={posterUrl}
+                alt={`${anime.title} anime poster — watch together with friends on Crunchyroll`}
+                width={220}
+                height={330}
+                className="w-full rounded-lg shadow-md object-cover aspect-[2/3]"
+                sizes="(max-width: 768px) 55vw, 220px"
+                decoding="async"
+              />
+              <figcaption className="text-gray-500 text-xs mt-2 text-center md:text-left">
+                Poster via MyAnimeList / Jikan
+              </figcaption>
+            </figure>
+          ) : null}
+          <div className="min-w-0 flex-1">
+            <h2 className="text-2xl font-bold text-gray-900 mb-4">
+              What is {anime.title}?
+            </h2>
+            <div className="grid grid-cols-2 gap-4 text-sm">
+              {anime.japaneseTitle && (
+                <div>
+                  <span className="text-gray-500">Japanese title</span>
+                  <p className="font-medium text-gray-900">{anime.japaneseTitle}</p>
+                </div>
+              )}
+              <div>
+                <span className="text-gray-500">Episodes</span>
+                <p className="font-medium text-gray-900">{episodesDisplay}</p>
+              </div>
+              {statusLine && (
+                <div>
+                  <span className="text-gray-500">Airing status</span>
+                  <p className="font-medium text-gray-900">{statusLine}</p>
+                </div>
+              )}
+              {scoreLine && (
+                <div>
+                  <span className="text-gray-500">Score</span>
+                  <p className="font-medium text-gray-900">{scoreLine}</p>
+                </div>
+              )}
+              {membersLine && (
+                <div>
+                  <span className="text-gray-500">Popularity</span>
+                  <p className="font-medium text-gray-900">{membersLine}</p>
+                </div>
+              )}
+              <div>
+                <span className="text-gray-500">Genres</span>
+                <p className="font-medium text-gray-900">
+                  {genresDisplay}
+                </p>
+              </div>
+              <div>
+                <span className="text-gray-500">Platform</span>
+                <p className="font-medium text-gray-900">Crunchyroll</p>
+              </div>
             </div>
-          )}
-          <div>
-            <span className="text-gray-500">Episodes</span>
-            <p className="font-medium text-gray-900">{episodesDisplay}</p>
-          </div>
-          {statusLine && (
-            <div>
-              <span className="text-gray-500">Airing status</span>
-              <p className="font-medium text-gray-900">{statusLine}</p>
-            </div>
-          )}
-          {scoreLine && (
-            <div>
-              <span className="text-gray-500">Score</span>
-              <p className="font-medium text-gray-900">{scoreLine}</p>
-            </div>
-          )}
-          {membersLine && (
-            <div>
-              <span className="text-gray-500">Popularity</span>
-              <p className="font-medium text-gray-900">{membersLine}</p>
-            </div>
-          )}
-          <div>
-            <span className="text-gray-500">Genres</span>
-            <p className="font-medium text-gray-900">
-              {genresDisplay}
+            <p className="text-gray-600 text-xs mt-3">
+              Episode count, status, scores, and poster are from MyAnimeList (via
+              the Jikan API) and refresh about once a day. If the service is slow,
+              the site falls back to our written summary.
             </p>
-          </div>
-          <div>
-            <span className="text-gray-500">Platform</span>
-            <p className="font-medium text-gray-900">Crunchyroll</p>
+            <p className="text-gray-700 leading-relaxed mt-4 text-base">{anime.synopsis}</p>
           </div>
         </div>
-        <p className="text-gray-600 text-xs mt-3">
-          Episode count, status, and scores are from MyAnimeList (via the Jikan
-          API) and refresh about once a day. If the service is slow, the site
-          falls back to our written summary.
-        </p>
-        <p className="text-gray-700 leading-relaxed mt-4 text-base">{anime.synopsis}</p>
       </div>
 
       <h2

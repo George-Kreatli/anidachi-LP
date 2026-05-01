@@ -150,13 +150,23 @@ export function ArticleJsonLd({
   url,
   datePublished,
   dateModified,
+  image,
 }: {
   title: string;
   description: string;
   url: string;
   datePublished: string;
   dateModified: string;
+  /** Absolute URLs preferred (e.g. MAL CDN poster). Helps Article/carousel eligibility in Search. */
+  image?: string | string[];
 }) {
+  const images =
+    image == null
+      ? undefined
+      : Array.isArray(image)
+        ? image
+        : [image];
+
   const data = {
     "@context": "https://schema.org",
     "@type": "Article",
@@ -165,6 +175,7 @@ export function ArticleJsonLd({
     url: url.startsWith("http") ? url : `${SITE_URL}${url}`,
     datePublished,
     dateModified,
+    ...(images?.length ? { image: images } : {}),
     author: {
       "@type": "Organization",
       name: "AniDachi",

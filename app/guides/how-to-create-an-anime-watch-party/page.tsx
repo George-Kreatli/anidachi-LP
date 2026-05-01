@@ -207,6 +207,14 @@ export default function HowToCreateAnimeWatchPartyPage() {
             </Link>
           </li>
           <li>
+            <Link
+              href="/guides/how-to-watch-anime-with-a-group"
+              className="hover:underline"
+            >
+              How to Watch Anime With a Group
+            </Link>
+          </li>
+          <li>
             <Link href="/guides/anime-watch-party-ideas" className="hover:underline">
               Anime Watch Party Ideas
             </Link>

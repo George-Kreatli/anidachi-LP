@@ -11,6 +11,17 @@ export const guideLinks: GuideLinkItem[] = [
     tags: ["template-c", "how-to-core", "online", "pillar-watch-anime"],
   },
   {
+    href: "/guides/how-to-watch-anime-with-friends-on-discord",
+    label: "How to Watch Anime With Friends on Discord",
+    tags: [
+      "template-c",
+      "how-to-core",
+      "discord",
+      "pillar-watch-anime",
+      "pillar-watch-crunchyroll",
+    ],
+  },
+  {
     href: "/guides/how-to-watch-anime-long-distance",
     label: "How to Watch Anime Long Distance",
     tags: ["template-c", "how-to-core", "long-distance", "pillar-watch-anime"],
@@ -29,6 +40,17 @@ export const guideLinks: GuideLinkItem[] = [
     href: "/guides/how-to-create-an-anime-watch-party",
     label: "How to Create an Anime Watch Party",
     tags: ["template-c", "how-to-core", "watch-party", "pillar-watch-anime"],
+  },
+  {
+    href: "/guides/how-to-watch-anime-with-a-group",
+    label: "How to Watch Anime With a Group",
+    tags: [
+      "template-c",
+      "how-to-core",
+      "watch-party",
+      "pillar-watch-anime",
+      "pillar-watch-crunchyroll",
+    ],
   },
   {
     href: "/guides/how-to-watch-crunchyroll-with-friends",
@@ -59,6 +81,11 @@ export const guideLinks: GuideLinkItem[] = [
   {
     href: "/guides/best-anime-to-watch-with-friends",
     label: "Best Anime to Watch with Friends",
+    tags: ["template-d", "listicle", "pillar-watch-anime"],
+  },
+  {
+    href: "/guides/best-anime-to-watch-for-beginners",
+    label: "Best Anime to Watch for Beginners",
     tags: ["template-d", "listicle", "pillar-watch-anime"],
   },
 ];

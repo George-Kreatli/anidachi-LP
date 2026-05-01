@@ -39,7 +39,7 @@ export function NavBar() {
               href="/watch-anime-together"
               className="text-purple-100 hover:text-white transition-colors"
             >
-              Guides
+              Watch
             </Link>
           </li>
           <li>
